@@ -1,0 +1,76 @@
+{
+  "companies": {
+    "google": {
+      "company_id": "google",
+      "name": "Google LLC",
+      "locations": ["Bengaluru, India (Hybrid)", "Bengaluru, India"],
+      "roles": [
+        "Software Engineer (SWE)",
+        "Data Scientist"
+      ],
+      "skill_thresholds": {
+        "COD": 9,
+        "DSA": 9,
+        "OOD": 8,
+        "APTI": 9,
+        "COMM": 8,
+        "AI": 8,
+        "CLOUD": 7,
+        "SQL": 7,
+        "SWE": 9,
+        "SYSD": 9,
+        "NETW": 8,
+        "OS": 8
+      },
+      "description": "High bar in algorithmic problem solving (DSA 9/10), deep systems/OS, and scalable architecture."
+    },
+    "microsoft": {
+      "company_id": "microsoft",
+      "name": "Microsoft Corporation",
+      "locations": ["Hyderabad, India"],
+      "roles": [
+        "Software Engineer",
+        "Data Analyst"
+      ],
+      "skill_thresholds": {
+        "COD": 8,
+        "DSA": 8,
+        "OOD": 8,
+        "APTI": 8,
+        "COMM": 8,
+        "AI": 7,
+        "CLOUD": 8,
+        "SQL": 8,
+        "SWE": 8,
+        "SYSD": 8,
+        "NETW": 7,
+        "OS": 7
+      },
+      "description": "Balanced high bar in SWE, cloud computing (Azure), enterprise design patterns, and DSA."
+    },
+    "oracle": {
+      "company_id": "oracle",
+      "name": "Oracle Financial Services Software",
+      "locations": ["Bengaluru / Mumbai, India", "Bengaluru / Chennai, India"],
+      "roles": [
+        "Associate Software Engineer",
+        "Application Support Analyst"
+      ],
+      "skill_thresholds": {
+        "COD": 7,
+        "DSA": 6,
+        "OOD": 7,
+        "APTI": 7,
+        "COMM": 8,
+        "AI": 4,
+        "CLOUD": 5,
+        "SQL": 8,
+        "SWE": 7,
+        "SYSD": 5,
+        "NETW": 6,
+        "OS": 6
+      },
+      "description": "Strong emphasis on SQL, relational integrity, enterprise Java/OOP, client communication, and support triage."
+    }
+  }
+}
