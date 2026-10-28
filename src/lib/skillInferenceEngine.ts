@@ -9,6 +9,7 @@
  */
 
 import { CategoryCode, Skill, ConfidenceLevel } from "../types/contract";
+import type { JdAnalysis } from "../types/jd";
 
 export interface SkillDependencyRule {
   parentSkill: string;
@@ -609,6 +610,8 @@ export interface ExtractedJdResult {
   }>;
   categoryCoverage: Record<CategoryCode, number>;
   rawJsonExport: Record<string, any>;
+  /** Present when produced by the Role 1 backend (server/jd). */
+  analysis?: JdAnalysis;
 }
 
 export interface ExtractedResumeResult {

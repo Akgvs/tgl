@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useProfile } from "../context/ProfileContext";
 import { SAMPLE_JOB_DESCRIPTIONS } from "../data/sampleJobDescriptions";
 import { CategoryBadge } from "../components/CategoryBadge";
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
-import { CategoryCode } from "../types/contract";
+import { localMatch, matchSkillsRemote, MatchView } from "../lib/skillMatch";
 
 interface Page5SkillMatchingProps {
   onBack: () => void;
@@ -73,159 +73,31 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
     };
   }, [selectedJdSource, activeJdResult, selectedPresetKey]);
 
-  // Perform intelligent matching between candidate profile skills and target JD
-  const { matchScore, matchedSkills, missingSkills } = useMemo(() => {
-    const candidateSkillsLower = profile.skills.map((s) => ({
-      name: s.skill_name.toLowerCase(),
-      category: s.category_code,
-      evidence: s.evidence,
-      confidence: s.confidence,
-      original: s,
-    }));
+  // Match on the shared taxonomy (backend); fall back to the offline matcher.
+  const localResult = useMemo(
+    () => localMatch(profile.skills, targetJob.skills_required),
+    [profile.skills, targetJob]
+  );
+  const [remoteResult, setRemoteResult] = useState<MatchView | null>(null);
 
-    const matched: Array<{
-      reqSkill: string;
-      category: CategoryCode;
-      candSkillName: string;
-      evidence: string;
-      confidence: string;
-      matchType: "direct" | "implied" | "category";
-      matchNote?: string;
-    }> = [];
-
-    const missing: Array<{
-      reqSkill: string;
-      category: CategoryCode;
-      reason: string;
-      recommendation: string;
-    }> = [];
-
-    targetJob.skills_required.forEach((req) => {
-      const lowerReq = req.skill_name.toLowerCase();
-
-      // 1. Direct match on skill name
-      const directMatch = candidateSkillsLower.find(
-        (cs) => cs.name === lowerReq || cs.name.includes(lowerReq) || lowerReq.includes(cs.name)
-      );
-
-      if (directMatch) {
-        matched.push({
-          reqSkill: req.skill_name,
-          category: req.category_code,
-          candSkillName: directMatch.original.skill_name,
-          evidence: directMatch.evidence,
-          confidence: directMatch.confidence,
-          matchType: "direct",
-        });
-        return;
-      }
-
-      // 2. Implied Prerequisite Check
-      const isWebPrereq =
-        (lowerReq.includes("javascript") || lowerReq.includes("css") || lowerReq.includes("html") || lowerReq.includes("dom")) &&
-        candidateSkillsLower.some((cs) => cs.name.includes("react") || cs.name.includes("vue") || cs.name.includes("angular"));
-
-      const isPythonPrereq =
-        lowerReq.includes("python") &&
-        candidateSkillsLower.some((cs) => cs.name.includes("fastapi") || cs.name.includes("django") || cs.name.includes("flask") || cs.name.includes("pytorch"));
-
-      const isJavaPrereq =
-        lowerReq.includes("java") &&
-        candidateSkillsLower.some((cs) => cs.name.includes("spring") || cs.name.includes("android"));
-
-      const isLinuxPrereq =
-        lowerReq.includes("linux") &&
-        candidateSkillsLower.some((cs) => cs.name.includes("docker") || cs.name.includes("kubernetes"));
-
-      if (isWebPrereq) {
-        const parent = candidateSkillsLower.find((cs) => cs.name.includes("react") || cs.name.includes("vue") || cs.name.includes("angular"));
-        matched.push({
-          reqSkill: req.skill_name,
-          category: req.category_code,
-          candSkillName: parent?.original.skill_name || "Modern Frontend",
-          evidence: `Candidate's verified mastery of ${parent?.original.skill_name} demonstrates foundational ${req.skill_name} competency.`,
-          confidence: "high",
-          matchType: "implied",
-          matchNote: `Inferred via ${parent?.original.skill_name}`,
-        });
-        return;
-      }
-
-      if (isPythonPrereq) {
-        const parent = candidateSkillsLower.find((cs) => cs.name.includes("fastapi") || cs.name.includes("django") || cs.name.includes("pytorch"));
-        matched.push({
-          reqSkill: req.skill_name,
-          category: req.category_code,
-          candSkillName: parent?.original.skill_name || "Python Stack",
-          evidence: `Demonstrated through ${parent?.original.skill_name} implementation.`,
-          confidence: "high",
-          matchType: "implied",
-          matchNote: `Inferred via ${parent?.original.skill_name}`,
-        });
-        return;
-      }
-
-      if (isJavaPrereq) {
-        const parent = candidateSkillsLower.find((cs) => cs.name.includes("spring"));
-        matched.push({
-          reqSkill: req.skill_name,
-          category: req.category_code,
-          candSkillName: parent?.original.skill_name || "Spring Framework",
-          evidence: `Enterprise Java mastery proven via ${parent?.original.skill_name}.`,
-          confidence: "high",
-          matchType: "implied",
-          matchNote: `Inferred via ${parent?.original.skill_name}`,
-        });
-        return;
-      }
-
-      if (isLinuxPrereq) {
-        const parent = candidateSkillsLower.find((cs) => cs.name.includes("docker") || cs.name.includes("kubernetes"));
-        matched.push({
-          reqSkill: req.skill_name,
-          category: req.category_code,
-          candSkillName: parent?.original.skill_name || "Containerization",
-          evidence: `Linux environment skills demonstrated via ${parent?.original.skill_name}.`,
-          confidence: "high",
-          matchType: "implied",
-          matchNote: `Inferred via ${parent?.original.skill_name}`,
-        });
-        return;
-      }
-
-      // 3. Category match fallback
-      const catMatch = candidateSkillsLower.find((cs) => cs.category === req.category_code);
-      if (catMatch) {
-        matched.push({
-          reqSkill: req.skill_name,
-          category: req.category_code,
-          candSkillName: catMatch.original.skill_name,
-          evidence: `Related competence in ${catMatch.original.skill_name} under category ${req.category_code}.`,
-          confidence: "medium",
-          matchType: "category",
-          matchNote: `Category match (${req.category_code})`,
-        });
-        return;
-      }
-
-      // Not matched -> Record gap
-      missing.push({
-        reqSkill: req.skill_name,
-        category: req.category_code,
-        reason: req.evidence,
-        recommendation: getRecommendation(req.skill_name, req.category_code),
-      });
-    });
-
-    const total = targetJob.skills_required.length;
-    const score = total > 0 ? Math.round((matched.length / total) * 100) : 0;
-
-    return {
-      matchScore: score,
-      matchedSkills: matched,
-      missingSkills: missing,
+  useEffect(() => {
+    let cancelled = false;
+    setRemoteResult(null);
+    matchSkillsRemote(profile.skills, targetJob.skills_required)
+      .then((result) => !cancelled && setRemoteResult(result))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
     };
   }, [profile.skills, targetJob]);
+
+  const { matchScore, matchedSkills, missingSkills: rawMissing } = remoteResult ?? localResult;
+  const missingSkills = rawMissing.map((gap) => ({
+    ...gap,
+    recommendation:
+      getRecommendation(gap.reqSkill, gap.category) +
+      (gap.related ? ` You already have ${gap.related} in ${gap.category}; build on it.` : ""),
+  }));
 
   function getRecommendation(skillName: string, category: string): string {
     switch (category) {

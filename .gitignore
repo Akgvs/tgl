@@ -34,3 +34,8 @@ ENV/
 *.njsproj
 *.sln
 *.sw?
+
+# JD Analytics runtime output
+data/jd/extractions/
+data/jd/active.json
+__pycache__/

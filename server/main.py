@@ -18,7 +18,15 @@ from .models import (
     ValidationResult,
     Skill
 )
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+except ImportError:
+    pass
+
 from .contract_validator import validate_candidate_profile
+from .jd.router import router as jd_router
+from .skill_match import router as match_router
 from .storage import (
     init_storage,
     get_active_profile,
@@ -47,6 +55,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(jd_router)
+app.include_router(match_router)
 
 @app.on_event("startup")
 async def startup_event():
