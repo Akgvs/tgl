@@ -56,6 +56,12 @@ Endpoints:
 - **`GET /api/jd/active/contract`** — Role 1 → Role 5 handoff: the active JD's skill list in the shared format
 - **`POST /api/match`** — Role 5: match candidate skills against a JD skill list (score, matched, gaps)
 
+### Role 4 — Talent Check
+
+The Talent Check screen loads its company benchmarks from `GET /api/talent-check-bars`; it does not substitute a separate frontend dataset when the API is unavailable. Before display, each company must provide numeric thresholds from 1–10 for all 12 categories. The screen reports invalid or unavailable benchmark data instead of scoring against defaults.
+
+Candidate category levels are transparent estimates from profile evidence, not measured test results: the score starts at 1, adds confidence-weighted documented skills and relevant profile entries, then rounds and caps at 10. Users can inspect the evidence and point contributions for each category. A benchmark requires at least three distinct supporting profile records across at least two categories. Readiness is the capped candidate points divided by the sum of company thresholds, shown as a percentage. Results can be downloaded as JSON.
+
 JD Analytics design and LLM options: [docs/JD_ANALYTICS_PLAN.md](docs/JD_ANALYTICS_PLAN.md) · [docs/LLM_SETUP.md](docs/LLM_SETUP.md)
 
 ### 2. React Frontend (Vite on Port 5173)

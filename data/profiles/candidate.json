@@ -1,0 +1,27 @@
+{
+  "id": "candidate",
+  "name": "Candidate",
+  "email": "candidate@example.com",
+  "phone": "+91 98765 43210",
+  "education": "B.Tech in Computer Science and Engineering, 2024",
+  "institution": null,
+  "cgpa": "8.5",
+  "graduation_year": "2024",
+  "linkedin": null,
+  "github": null,
+  "portfolio": null,
+  "summary": null,
+  "skills": [],
+  "hackathons": [],
+  "internships": [],
+  "certifications": [],
+  "preferred_roles": [
+    "Full Stack Developer",
+    "Software Engineer"
+  ],
+  "preferred_companies": [],
+  "preferred_mode": "Hybrid",
+  "cv_file": "Vansh_Kumar_Resume_Daice_Labs.pdf",
+  "cv_uploaded_at": "2026-10-28T20:34:38.848Z",
+  "last_updated": "2026-10-28T20:35:15.083028+00:00"
+}

@@ -1,13 +1,14 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useProfile } from "../context/ProfileContext";
 import { CategoryBadge } from "./CategoryBadge";
 import {
-  TALENT_CHECK_COMPANY_SKILLSETS,
-  ALL_COMPANIES_LIST,
+  listCompanies,
   computeCandidateCompetencyScores,
   evaluateCandidateAgainstCompany,
-  CompanySkillsetExpectation
+  CompanySkillsetExpectation,
+  TalentCheckCompanyDataset
 } from "../data/talentCheckCompanySkillsets";
+import { fetchCompanySkillsets } from "../lib/api";
 import {
   Building2,
   AlertCircle,
@@ -18,18 +19,41 @@ import {
 export const TalentCheckPreview: React.FC = () => {
   const { profile } = useProfile();
   const [selectedCompanyKey, setSelectedCompanyKey] = useState<string>("google");
+  const [dataset, setDataset] = useState<TalentCheckCompanyDataset | null>(null);
+  const [datasetError, setDatasetError] = useState<string | null>(null);
 
-  const companies = TALENT_CHECK_COMPANY_SKILLSETS.companies;
-  const company: CompanySkillsetExpectation =
-    companies[selectedCompanyKey] || companies.google;
+  useEffect(() => {
+    let active = true;
+    fetchCompanySkillsets()
+      .then((result) => {
+        if (active) setDataset(result);
+      })
+      .catch((error: unknown) => {
+        if (active) setDatasetError(error instanceof Error ? error.message : "Could not load company benchmarks.");
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const companyList = useMemo(() => dataset ? listCompanies(dataset) : [], [dataset]);
+  const company: CompanySkillsetExpectation | undefined = dataset?.companies[selectedCompanyKey];
 
   const candidateScores = useMemo(() => {
     return computeCandidateCompetencyScores(profile);
   }, [profile]);
 
   const evaluation = useMemo(() => {
-    return evaluateCandidateAgainstCompany(candidateScores, company);
+    return company ? evaluateCandidateAgainstCompany(candidateScores, company) : null;
   }, [candidateScores, company]);
+
+  if (datasetError || !dataset || !company || !evaluation) {
+    return (
+      <div className="p-6 text-sm text-slate-600" role={datasetError ? "alert" : "status"}>
+        {datasetError || "Loading verified company benchmarks…"}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -40,7 +64,7 @@ export const TalentCheckPreview: React.FC = () => {
               Hiring Bar Benchmark Simulation
             </h2>
             <span className="rounded-full bg-cyan-100 text-cyan-800 text-[10px] font-bold px-2 py-0.5 border border-cyan-200">
-              {ALL_COMPANIES_LIST.length} Company Skillsets
+              {companyList.length} Company Skillsets
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -50,16 +74,16 @@ export const TalentCheckPreview: React.FC = () => {
 
         {/* Company Switcher */}
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
-            {[
-              { key: "google", label: "Google" },
-              { key: "microsoft", label: "Microsoft" },
-              { key: "oracle", label: "Oracle" }
-            ].map(({ key, label }) => {
+          <fieldset className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <legend className="sr-only">Select a featured benchmark company</legend>
+            {(["google", "microsoft", "oracle"] as const).map((key) => {
+              const featuredCompany = dataset.companies[key];
               const isSelected = selectedCompanyKey === key;
               return (
                 <button
                   key={key}
+                  type="button"
+                  aria-pressed={isSelected}
                   onClick={() => setSelectedCompanyKey(key)}
                   className={`px-3 py-1.5 text-xs rounded-lg font-medium transition-all ${
                     isSelected
@@ -67,18 +91,19 @@ export const TalentCheckPreview: React.FC = () => {
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  {label}
+                  {featuredCompany.name}
                 </button>
               );
             })}
-          </div>
+          </fieldset>
 
           <select
+            aria-label="Select benchmark company"
             value={selectedCompanyKey}
             onChange={(e) => setSelectedCompanyKey(e.target.value)}
             className="text-xs font-semibold rounded-xl border border-slate-200 bg-white py-1.5 px-3 text-slate-700 shadow-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
           >
-            {ALL_COMPANIES_LIST.map((c) => (
+            {companyList.map((c) => (
               <option key={c.company_id} value={c.company_id}>
                 {c.id ? `[#${c.id}] ` : ""}{c.name}
               </option>
