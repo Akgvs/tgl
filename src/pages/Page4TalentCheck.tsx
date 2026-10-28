@@ -1,7 +1,14 @@
 import React, { useState, useMemo } from "react";
 import { useProfile } from "../context/ProfileContext";
-import { CategoryCode, RADIX_SKILL_CATEGORIES } from "../types/contract";
+import { RADIX_SKILL_CATEGORIES } from "../types/contract";
 import { CategoryBadge } from "../components/CategoryBadge";
+import {
+  TALENT_CHECK_COMPANY_SKILLSETS,
+  computeCandidateCompetencyScores,
+  evaluateCandidateAgainstCompany,
+  CompanySkillsetExpectation,
+  ALL_12_SKILLSET_CODES
+} from "../data/talentCheckCompanySkillsets";
 import {
   Building2,
   Target,
@@ -10,7 +17,11 @@ import {
   ArrowRight,
   ArrowLeft,
   BarChart2,
-  RefreshCw
+  RefreshCw,
+  MapPin,
+  Briefcase,
+  Sparkles,
+  Info
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -19,118 +30,34 @@ interface Page4TalentCheckProps {
   onBack: () => void;
 }
 
-interface CompanyBar {
-  id: string;
-  name: string;
-  roles: string[];
-  description: string;
-  thresholds: Record<CategoryCode, number>;
-}
-
-const COMPANIES: Record<string, CompanyBar> = {
-  google: {
-    id: "google",
-    name: "Google LLC",
-    roles: ["Software Engineer (SWE)", "Data Scientist"],
-    description: "High bar in algorithmic problem solving (DSA 9/10), deep systems/OS, and scalable architecture.",
-    thresholds: {
-      COD: 9, DSA: 9, OOD: 8, APTI: 9, COMM: 8, AI: 8,
-      CLOUD: 7, SQL: 7, SWE: 9, SYSD: 9, NETW: 8, OS: 8, OTHER: 5
-    }
-  },
-  microsoft: {
-    id: "microsoft",
-    name: "Microsoft Corporation",
-    roles: ["Software Engineer", "Data Analyst"],
-    description: "Balanced high bar across cloud computing (Azure), enterprise design patterns, SQL, and DSA.",
-    thresholds: {
-      COD: 8, DSA: 8, OOD: 8, APTI: 8, COMM: 8, AI: 7,
-      CLOUD: 8, SQL: 8, SWE: 8, SYSD: 8, NETW: 7, OS: 7, OTHER: 5
-    }
-  },
-  oracle: {
-    id: "oracle",
-    name: "Oracle Financial Services",
-    roles: ["Associate Software Engineer", "Application Support Analyst"],
-    description: "Strong emphasis on SQL, relational integrity, enterprise Java/OOP, client communication, and incident triage.",
-    thresholds: {
-      COD: 7, DSA: 6, OOD: 7, APTI: 7, COMM: 8, AI: 4,
-      CLOUD: 5, SQL: 8, SWE: 7, SYSD: 5, NETW: 6, OS: 6, OTHER: 5
-    }
-  }
-};
-
 export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBack }) => {
   const { profile } = useProfile();
   const [selectedCompanyKey, setSelectedCompanyKey] = useState<string>("google");
-  const [hasEvaluated, setHasEvaluated] = useState<boolean>(true);
   const [isRunningCheck, setIsRunningCheck] = useState<boolean>(false);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
-  const company = COMPANIES[selectedCompanyKey] || COMPANIES.google;
+  const companies = TALENT_CHECK_COMPANY_SKILLSETS.companies;
+  const currentCompany: CompanySkillsetExpectation =
+    companies[selectedCompanyKey] || companies.google;
 
-  // Compute candidate level (1-10) for each of the 12 skillsets
+  // Compute candidate level (1-10) for each of the 12 skillsets using official rules
   const candidateScores = useMemo(() => {
-    const scores: Record<CategoryCode, number> = {
-      COD: 3, DSA: 3, OOD: 3, APTI: 3, COMM: 3, AI: 2,
-      CLOUD: 2, SQL: 3, SWE: 3, SYSD: 2, NETW: 2, OS: 2, OTHER: 3
-    };
+    return computeCandidateCompetencyScores(profile);
+  }, [profile]);
 
-    profile.skills.forEach((s) => {
-      const boost = s.confidence === "high" ? 2.5 : s.confidence === "medium" ? 1.5 : 0.8;
-      scores[s.category_code] = Math.min(10, Math.round(scores[s.category_code] + boost));
-    });
-
-    if (profile.hackathons.length > 0) {
-      scores.SWE = Math.min(10, scores.SWE + 1);
-      scores.APTI = Math.min(10, scores.APTI + 1);
-    }
-    if (profile.internships.length > 0) {
-      scores.COMM = Math.min(10, scores.COMM + 1);
-      scores.SWE = Math.min(10, scores.SWE + 1);
-    }
-
-    return scores;
-  }, [profile.skills, profile.hackathons, profile.internships]);
-
-  // Compute readiness score & gaps
-  const { readinessScore, gaps, strengths } = useMemo(() => {
-    let totalReq = 0;
-    let totalMet = 0;
-    const gapList: Array<{ category: CategoryCode; req: number; cand: number; gap: number }> = [];
-    const strengthList: Array<{ category: CategoryCode; req: number; cand: number }> = [];
-
-    (Object.keys(company.thresholds) as CategoryCode[]).forEach((cat) => {
-      if (cat === "OTHER") return;
-      const req = company.thresholds[cat];
-      const cand = candidateScores[cat] || 2;
-      totalReq += req;
-      totalMet += Math.min(req, cand);
-
-      if (cand < req) {
-        gapList.push({ category: cat, req, cand, gap: req - cand });
-      } else {
-        strengthList.push({ category: cat, req, cand });
-      }
-    });
-
-    const score = Math.round((totalMet / totalReq) * 100);
-
-    return {
-      readinessScore: score,
-      gaps: gapList.sort((a, b) => b.gap - a.gap),
-      strengths: strengthList,
-    };
-  }, [company, candidateScores]);
+  // Evaluate candidate against company's 12-skillset expectations
+  const evaluation = useMemo(() => {
+    return evaluateCandidateAgainstCompany(candidateScores, currentCompany);
+  }, [candidateScores, currentCompany]);
 
   const handleRunCheck = () => {
     setIsRunningCheck(true);
     setTimeout(() => {
       setIsRunningCheck(false);
-      setHasEvaluated(true);
-      if (readinessScore >= 80) {
-        confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+      if (evaluation.readinessScore >= 80) {
+        confetti({ particleCount: 60, spread: 70, origin: { y: 0.65 } });
       }
-    }, 600);
+    }, 500);
   };
 
   return (
@@ -138,11 +65,19 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-semibold text-blue-800">
+              <Sparkles className="h-3 w-3" />
+              <span>12-Skillset Benchmark Engine</span>
+            </span>
+            <span className="text-xs text-slate-400">•</span>
+            <span className="text-xs text-slate-500 font-mono">talent_check_company_skillsets.json</span>
+          </div>
           <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Company Benchmarks
           </h1>
-          <p className="mt-1 text-xs sm:text-sm text-slate-500">
-            Compare your profile against company hiring standards and identify readiness gaps.
+          <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-2xl">
+            Evaluate candidate proficiency levels (1–10) across all 12 competency skillsets against verified company hiring expectations.
           </p>
         </div>
 
@@ -169,11 +104,11 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-              Select Target Company:
+              Select Company to Evaluate:
             </label>
             <div className="flex flex-wrap gap-2">
-              {Object.keys(COMPANIES).map((key) => {
-                const comp = COMPANIES[key];
+              {Object.keys(companies).map((key) => {
+                const comp = companies[key];
                 const isSelected = selectedCompanyKey === key;
                 return (
                   <button
@@ -181,7 +116,7 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                     type="button"
                     onClick={() => {
                       setSelectedCompanyKey(key);
-                      setHasEvaluated(true);
+                      setExpandedCategory(null);
                     }}
                     className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
                       isSelected
@@ -189,7 +124,7 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                         : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                     }`}
                   >
-                    {comp.name}
+                    <span>{comp.name}</span>
                   </button>
                 );
               })}
@@ -202,37 +137,51 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 shrink-0"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isRunningCheck ? "animate-spin" : ""}`} />
-            <span>{isRunningCheck ? "Evaluating..." : "Run Benchmark"}</span>
+            <span>{isRunningCheck ? "Evaluating 12 Skillsets..." : "Run Benchmark"}</span>
           </button>
         </div>
       </div>
 
       {/* Score and Gap Summary Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {/* Company Overview */}
+        {/* Company Overview Card */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-              <Building2 className="h-4 w-4 text-blue-600" />
-              <span>Target Standard</span>
+            <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+              <span className="flex items-center gap-1.5">
+                <Building2 className="h-4 w-4 text-blue-600" />
+                <span>Target Standard</span>
+              </span>
+              <span className="text-[10px] font-mono text-slate-400">12 SKILLSETS</span>
             </div>
-            <h3 className="font-heading text-lg font-bold text-slate-900">{company.name}</h3>
-            <p className="text-xs text-slate-600 mt-2 leading-relaxed">{company.description}</p>
+            <h3 className="font-heading text-lg font-bold text-slate-900">{currentCompany.name}</h3>
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">{currentCompany.description}</p>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100">
-            <span className="text-[11px] font-semibold text-slate-500 block mb-1.5">Typical Roles:</span>
-            <div className="flex flex-wrap gap-1">
-              {company.roles.map((r) => (
-                <span key={r} className="rounded-md bg-blue-50 text-blue-700 px-2 py-0.5 text-[10px] font-medium border border-blue-100">
-                  {r}
-                </span>
-              ))}
+          <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
+            <div>
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+                Roles in Scope:
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {currentCompany.roles.map((r) => (
+                  <span key={r} className="rounded-md bg-blue-50 text-blue-700 px-2 py-0.5 text-[10px] font-medium border border-blue-100">
+                    {r}
+                  </span>
+                ))}
+              </div>
             </div>
+
+            {currentCompany.locations && currentCompany.locations.length > 0 && (
+              <div className="flex items-center gap-1 text-[11px] text-slate-500">
+                <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
+                <span className="truncate">{currentCompany.locations.join(" • ")}</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Readiness Meter */}
+        {/* Readiness Meter Card */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
@@ -240,111 +189,196 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                 <Target className="h-4 w-4 text-purple-600" />
                 <span>Readiness Score</span>
               </div>
-              <span className="font-mono text-[11px] text-slate-400">0-100</span>
+              <span className="font-mono text-[11px] text-slate-400">
+                {evaluation.totalMet} / {evaluation.totalRequired} pts
+              </span>
             </div>
 
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="font-heading text-4xl sm:text-5xl font-black text-slate-900">{readinessScore}%</span>
+              <span className="font-heading text-4xl sm:text-5xl font-black text-slate-900">
+                {evaluation.readinessScore}%
+              </span>
               <span
                 className={`text-xs font-bold ${
-                  readinessScore >= 80 ? "text-emerald-600" : readinessScore >= 65 ? "text-amber-600" : "text-rose-600"
+                  evaluation.readinessScore >= 80
+                    ? "text-emerald-600"
+                    : evaluation.readinessScore >= 65
+                    ? "text-amber-600"
+                    : "text-rose-600"
                 }`}
               >
-                {readinessScore >= 80 ? "Meets Bar" : readinessScore >= 65 ? "Competitive" : "Gaps Present"}
+                {evaluation.barStatus}
               </span>
             </div>
 
             <div className="w-full bg-slate-100 h-2.5 rounded-full mt-3 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-700 ${
-                  readinessScore >= 80 ? "bg-emerald-500" : readinessScore >= 65 ? "bg-amber-500" : "bg-rose-500"
+                  evaluation.readinessScore >= 80
+                    ? "bg-emerald-500"
+                    : evaluation.readinessScore >= 65
+                    ? "bg-amber-500"
+                    : "bg-rose-500"
                 }`}
-                style={{ width: `${readinessScore}%` }}
+                style={{ width: `${evaluation.readinessScore}%` }}
               />
             </div>
           </div>
 
-          <p className="text-xs text-slate-500 mt-4 leading-relaxed">
-            Meets or exceeds expected hiring bar in <strong className="text-emerald-700">{strengths.length} of 12</strong> skill categories.
-          </p>
+          <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500">
+            Meets or exceeds bar in <strong className="text-emerald-700 font-bold">{evaluation.strengths.length} of 12</strong> competency areas.
+          </div>
         </div>
 
-        {/* Gaps List */}
+        {/* Gaps List Card */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
-              <span>Skill Gaps ({gaps.length})</span>
+            <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+              <span className="flex items-center gap-1.5">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <span>Identified Skill Gaps</span>
+              </span>
+              <span className="font-mono text-[11px] font-bold text-rose-600">
+                {evaluation.gaps.length} areas
+              </span>
             </div>
 
             <div className="flex flex-col gap-2 mt-2 max-h-48 overflow-y-auto pr-1">
-              {gaps.map((g) => {
-                const meta = RADIX_SKILL_CATEGORIES[g.category];
-                return (
-                  <div key={g.category} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <CategoryBadge code={g.category} size="sm" />
-                      <span className="font-medium text-slate-700">{meta?.name || g.category}</span>
-                    </div>
-                    <span className="font-mono text-[11px] font-bold text-rose-600">
-                      Level {g.cand}/10 (Bar: {g.req})
-                    </span>
+              {evaluation.gaps.map((g) => (
+                <div
+                  key={g.category}
+                  className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs"
+                >
+                  <div className="flex items-center gap-1.5 truncate">
+                    <CategoryBadge code={g.category} size="sm" />
+                    <span className="font-medium text-slate-700 truncate">{g.name}</span>
                   </div>
-                );
-              })}
+                  <span className="font-mono text-[11px] font-bold text-rose-600 shrink-0 ml-2">
+                    L{g.cand} (Bar: {g.req})
+                  </span>
+                </div>
+              ))}
 
-              {gaps.length === 0 && (
+              {evaluation.gaps.length === 0 && (
                 <div className="p-3 text-center text-xs text-emerald-700 bg-emerald-50 rounded-xl font-medium">
-                  No gaps identified! Ready for technical rounds.
+                  Candidate meets or exceeds all 12 competency thresholds!
                 </div>
               )}
             </div>
           </div>
+
+          <p className="text-[11px] text-slate-400 mt-3 pt-2 border-t border-slate-100">
+            {evaluation.gaps.length > 0
+              ? `Largest gap: ${evaluation.gaps[0].name} (-${evaluation.gaps[0].gap} pts)`
+              : "Technical bar satisfied for all in-scope positions"}
+          </p>
         </div>
       </div>
 
-      {/* Competency Comparison Table */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-        <h3 className="font-heading text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <BarChart2 className="h-4 w-4 text-blue-600" />
-          <span>Competency Comparison</span>
+      {/* Role-Specific Fit Analysis Breakdown */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs mb-6">
+        <h3 className="font-heading text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+          <Briefcase className="h-4 w-4 text-blue-600" />
+          <span>Role-Specific Fit Analysis for {currentCompany.name}</span>
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {(Object.keys(company.thresholds) as CategoryCode[]).map((cat) => {
-            if (cat === "OTHER") return null;
-            const meta = RADIX_SKILL_CATEGORIES[cat];
-            const req = company.thresholds[cat];
-            const cand = candidateScores[cat] || 2;
-            const isGap = cand < req;
+          {evaluation.fitSummaryByRole.map((item, idx) => (
+            <div
+              key={idx}
+              className={`p-3.5 rounded-xl border transition-all ${
+                item.isPrimaryFit
+                  ? "border-emerald-200 bg-emerald-50/40"
+                  : "border-slate-200 bg-slate-50/40"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="font-bold text-xs text-slate-900">{item.role}</span>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    item.isPrimaryFit
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-slate-200 text-slate-700"
+                  }`}
+                >
+                  {item.isPrimaryFit ? "High Fit Alignment" : "Bridge Gaps"}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                {item.fitNote}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Full 12-Skillset Benchmark Breakdown */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+          <h3 className="font-heading text-sm font-bold text-slate-900 flex items-center gap-2">
+            <BarChart2 className="h-4 w-4 text-blue-600" />
+            <span>Full 12-Skillset Competency Breakdown</span>
+          </h3>
+          <span className="text-[11px] text-slate-400">
+            Click any skill to view remediation recommendations
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {evaluation.comparison.map((row) => {
+            const isGap = row.status === "gap";
+            const isExpanded = expandedCategory === row.category;
 
             return (
-              <div key={cat} className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/70 flex flex-col gap-2">
-                <div className="flex items-center justify-between text-xs">
+              <div
+                key={row.category}
+                onClick={() => setExpandedCategory(isExpanded ? null : row.category)}
+                className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                  isGap
+                    ? "border-amber-200/80 bg-amber-50/20 hover:bg-amber-50/40"
+                    : "border-slate-200/80 bg-slate-50/40 hover:bg-slate-50/80"
+                }`}
+              >
+                <div className="flex items-center justify-between text-xs mb-2">
                   <div className="flex items-center gap-2">
-                    <CategoryBadge code={cat} size="sm" />
-                    <span className="font-semibold text-slate-800">{meta?.name || cat}</span>
+                    <CategoryBadge code={row.category} size="sm" />
+                    <span className="font-semibold text-slate-800">{row.name}</span>
                   </div>
                   <div className="flex items-center gap-2 font-mono text-[11px]">
-                    <span className="text-slate-500">Bar: {req}/10</span>
+                    <span className="text-slate-500">Bar: {row.req}/10</span>
                     <span className="text-slate-300">•</span>
-                    <span className={`font-bold ${isGap ? "text-rose-600" : "text-emerald-600"}`}>
-                      Yours: {cand}/10 {isGap ? "(!)" : "✓"}
+                    <span
+                      className={`font-bold ${
+                        isGap ? "text-rose-600" : row.status === "exceeds" ? "text-emerald-700" : "text-emerald-600"
+                      }`}
+                    >
+                      Yours: {row.cand}/10 {isGap ? `(-${row.gap})` : "✓"}
                     </span>
                   </div>
                 </div>
 
-                <div className="relative h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+                {/* Progress bar with threshold marker */}
+                <div className="relative h-2 w-full bg-slate-200 rounded-full overflow-hidden mb-1">
                   <div
-                    className={`h-full rounded-full transition-all ${isGap ? "bg-amber-500" : "bg-emerald-500"}`}
-                    style={{ width: `${(cand / 10) * 100}%` }}
+                    className={`h-full rounded-full transition-all ${
+                      isGap ? "bg-amber-500" : "bg-emerald-500"
+                    }`}
+                    style={{ width: `${(row.cand / 10) * 100}%` }}
                   />
                   <div
                     className="absolute top-0 bottom-0 w-1 bg-slate-900 z-10"
-                    style={{ left: `${(req / 10) * 100}%` }}
-                    title={`Required bar: ${req}/10`}
+                    style={{ left: `${(row.req / 10) * 100}%` }}
+                    title={`Required bar: ${row.req}/10`}
                   />
                 </div>
+
+                {/* Expanded recommendation */}
+                {isExpanded && (
+                  <div className="mt-2.5 pt-2 border-t border-slate-200/60 text-[11px] text-slate-600 leading-snug">
+                    <span className="font-bold text-slate-800">Recommendation: </span>
+                    <span>{row.recommendation}</span>
+                  </div>
+                )}
               </div>
             );
           })}

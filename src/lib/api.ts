@@ -1,5 +1,6 @@
 import { CandidateProfile, ExtractedSkillListInput } from "../types/contract";
 import { SAMPLE_CANDIDATES } from "../data/sampleCandidates";
+import { TALENT_CHECK_COMPANY_SKILLSETS, TalentCheckCompanyDataset } from "../data/talentCheckCompanySkillsets";
 
 const API_BASE = "http://127.0.0.1:8000/api";
 
@@ -102,4 +103,17 @@ export async function ingestAnalyticsData(payload: ExtractedSkillListInput): Pro
 
   localStorage.setItem("radix_active_profile", JSON.stringify(updated));
   return updated;
+}
+
+export async function fetchCompanySkillsets(): Promise<TalentCheckCompanyDataset> {
+  try {
+    const res = await fetch(`${API_BASE}/talent-check-bars`, { signal: AbortSignal.timeout(2000) });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.companies) {
+        return data;
+      }
+    }
+  } catch {}
+  return TALENT_CHECK_COMPANY_SKILLSETS;
 }

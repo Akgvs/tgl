@@ -12,6 +12,18 @@ dist
 dist-ssr
 *.local
 
+# Environment variables & files
+.env
+.env.*
+!.env.example
+*.env
+
+# Python Virtual Environments
+env/
+venv/
+.venv/
+ENV/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
