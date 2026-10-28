@@ -124,9 +124,11 @@ export const SkillMatrix: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="font-heading text-xl font-bold tracking-tight text-slate-900">
-            Skills
+            Competencies
           </h2>
-
+          <p className="text-xs text-slate-500 mt-0.5">
+            Verified skills with confidence ratings and supporting project evidence.
+          </p>
         </div>
 
         <button
@@ -134,15 +136,15 @@ export const SkillMatrix: React.FC = () => {
           className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 active:scale-95 transition-all self-start sm:self-auto"
         >
           <Plus className="h-4 w-4" />
-          <span>Add Custom Skill</span>
+          <span>Add Skill</span>
         </button>
       </div>
 
-      {/* 12 Categories Visual Filter Grid */}
+      {/* Categories Visual Filter Grid */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Category Coverage ({Object.values(validation.coverage).filter((v) => v > 0).length} / 12 Active)
+            Categories ({Object.values(validation.coverage).filter((v) => v > 0).length} active)
           </span>
           <button
             onClick={() => setSelectedCategory("ALL")}
@@ -277,7 +279,7 @@ export const SkillMatrix: React.FC = () => {
                 <div className="mt-2.5 rounded-lg bg-slate-50 border border-slate-100 p-2.5 text-xs text-slate-600 leading-relaxed">
                   <div className="flex items-center gap-1 font-semibold text-slate-500 text-[10px] uppercase tracking-wider mb-1">
                     <Quote className="h-3 w-3 text-slate-400" />
-                    <span>Evidence / Quote</span>
+                    <span>Evidence</span>
                   </div>
                   <p className="italic">{skill.evidence || "No evidence recorded"}</p>
                 </div>
@@ -312,7 +314,7 @@ export const SkillMatrix: React.FC = () => {
             <form onSubmit={handleSubmitSkill}>
               <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-slate-50">
                 <h3 className="font-heading text-base font-bold text-slate-900">
-                  {editingIndex !== null ? "Edit Skill" : "Add Skill (RADIX Taxonomy)"}
+                  {editingIndex !== null ? "Edit Skill" : "Add Skill"}
                 </h3>
                 <button
                   type="button"
@@ -326,7 +328,7 @@ export const SkillMatrix: React.FC = () => {
               <div className="flex flex-col gap-4 p-6">
                 <div>
                   <label className="text-xs font-bold text-slate-700 block mb-1">
-                    Skill or Technology Name:
+                    Skill Name:
                   </label>
                   <input
                     type="text"
@@ -340,7 +342,7 @@ export const SkillMatrix: React.FC = () => {
 
                 <div>
                   <label className="text-xs font-bold text-slate-700 block mb-1">
-                    RADIX Skill Category (12 Codes):
+                    Category:
                   </label>
                   <select
                     value={formCategory}
@@ -360,7 +362,7 @@ export const SkillMatrix: React.FC = () => {
 
                 <div>
                   <label className="text-xs font-bold text-slate-700 block mb-1">
-                    Confidence Rating:
+                    Confidence:
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {(["high", "medium", "low"] as const).map((conf) => (
@@ -382,14 +384,14 @@ export const SkillMatrix: React.FC = () => {
 
                 <div>
                   <label className="text-xs font-bold text-slate-700 block mb-1">
-                    Evidence / Justification Quote:
+                    Evidence:
                   </label>
                   <textarea
                     required
                     rows={3}
                     value={formEvidence}
                     onChange={(e) => setFormEvidence(e.target.value)}
-                    placeholder="Short quote or reason from resume/projects, e.g. 'Engineered high-throughput thread pool in C++17 handling 40k req/sec'..."
+                    placeholder="Short quote or reason from projects/experience..."
                     className="w-full rounded-xl border border-slate-300 p-2.5 text-xs text-slate-900 focus:border-blue-500 focus:outline-hidden"
                   />
                 </div>

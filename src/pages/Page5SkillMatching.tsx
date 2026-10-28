@@ -1,25 +1,19 @@
 import React, { useState, useMemo } from "react";
 import { useProfile } from "../context/ProfileContext";
-import { SAMPLE_JOB_DESCRIPTIONS, JobDescription } from "../data/sampleJobDescriptions";
+import { SAMPLE_JOB_DESCRIPTIONS } from "../data/sampleJobDescriptions";
 import { CategoryBadge } from "../components/CategoryBadge";
 import {
-  Briefcase,
   CheckCircle2,
-  XCircle,
   AlertTriangle,
   ArrowLeft,
   Sparkles,
   Download,
   BookOpen,
-  Check,
-  Building,
-  Target,
-  GitBranch,
   ExternalLink
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
-import { Skill, CategoryCode } from "../types/contract";
+import { CategoryCode } from "../types/contract";
 
 interface Page5SkillMatchingProps {
   onBack: () => void;
@@ -126,8 +120,7 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
         return;
       }
 
-      // 2. Implied Prerequisite Check:
-      // If JD requires JS/CSS and candidate has React/Vue/Angular
+      // 2. Implied Prerequisite Check
       const isWebPrereq =
         (lowerReq.includes("javascript") || lowerReq.includes("css") || lowerReq.includes("html") || lowerReq.includes("dom")) &&
         candidateSkillsLower.some((cs) => cs.name.includes("react") || cs.name.includes("vue") || cs.name.includes("angular"));
@@ -153,7 +146,7 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
           evidence: `Candidate's verified mastery of ${parent?.original.skill_name} demonstrates foundational ${req.skill_name} competency.`,
           confidence: "high",
           matchType: "implied",
-          matchNote: `Inferred foundation via ${parent?.original.skill_name}`,
+          matchNote: `Inferred via ${parent?.original.skill_name}`,
         });
         return;
       }
@@ -167,7 +160,7 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
           evidence: `Demonstrated through ${parent?.original.skill_name} implementation.`,
           confidence: "high",
           matchType: "implied",
-          matchNote: `Inferred foundation via ${parent?.original.skill_name}`,
+          matchNote: `Inferred via ${parent?.original.skill_name}`,
         });
         return;
       }
@@ -181,7 +174,7 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
           evidence: `Enterprise Java mastery proven via ${parent?.original.skill_name}.`,
           confidence: "high",
           matchType: "implied",
-          matchNote: `Inferred foundation via ${parent?.original.skill_name}`,
+          matchNote: `Inferred via ${parent?.original.skill_name}`,
         });
         return;
       }
@@ -195,7 +188,7 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
           evidence: `Linux environment skills demonstrated via ${parent?.original.skill_name}.`,
           confidence: "high",
           matchType: "implied",
-          matchNote: `Inferred foundation via ${parent?.original.skill_name}`,
+          matchNote: `Inferred via ${parent?.original.skill_name}`,
         });
         return;
       }
@@ -210,7 +203,7 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
           evidence: `Related competence in ${catMatch.original.skill_name} under category ${req.category_code}.`,
           confidence: "medium",
           matchType: "category",
-          matchNote: `Category alignment (${req.category_code})`,
+          matchNote: `Category match (${req.category_code})`,
         });
         return;
       }
@@ -267,39 +260,28 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800 border border-emerald-200/60">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Step 5 · Job Skill Matching & Prerequisite Alignment</span>
-            </span>
-            {targetJob.isExtracted && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-semibold text-blue-800 border border-blue-200/60">
-                Connected to Extracted JD JSON
-              </span>
-            )}
-          </div>
-          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Target Job Match & Gap Report
+          <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+            Target Job Match
           </h1>
-          <p className="mt-1 text-sm text-slate-600 max-w-3xl">
-            Compares candidate profile against target Job Description requirements, factoring in both direct proficiencies and foundational prerequisite credit.
+          <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-2xl">
+            Detailed gap analysis comparing your competencies and inferred foundation against role requirements.
           </p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Back</span>
           </button>
           <button
             onClick={onOpenContractModal}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 active:scale-95 transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 active:scale-95 transition-all"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Export Contract JSON</span>
+            <span>Export Data</span>
           </button>
         </div>
       </div>
@@ -309,10 +291,10 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
           <div>
             <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Target Job Posting Source
+              Target Role
             </h3>
             <p className="text-xs text-slate-500">
-              Match against the active parsed JD from the JD Extractor or select standard benchmark jobs
+              Match against the analyzed job description or choose a benchmark role
             </p>
           </div>
 
@@ -326,7 +308,7 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                ⚡ Extracted JD ({activeJdResult.company})
+                Analyzed Role ({activeJdResult.company})
               </button>
             )}
             <button
@@ -337,7 +319,7 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Benchmark Preset Roles ({Object.keys(SAMPLE_JOB_DESCRIPTIONS).length})
+              Preset Roles ({Object.keys(SAMPLE_JOB_DESCRIPTIONS).length})
             </button>
           </div>
         </div>
@@ -373,7 +355,7 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
             })}
           </div>
         ) : (
-          <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-200/70 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-gradient-to-r from-blue-50/60 to-indigo-50/60 border border-blue-200/60 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-bold text-sm text-slate-900">{targetJob.company}</span>
@@ -390,7 +372,7 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
                 onClick={onNavigateToJdExtractor}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-white border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors shrink-0"
               >
-                <span>Edit / Parse New JD</span>
+                <span>Change JD</span>
                 <ExternalLink className="h-3 w-3" />
               </button>
             )}
@@ -399,11 +381,11 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
       </div>
 
       {/* Match Score Hero Card */}
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs mb-8">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-xs mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex-1">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-              Overall Readiness Score
+              Role Match Score
             </span>
             <div className="flex items-center gap-4">
               <span
@@ -418,41 +400,41 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
                 {matchScore}%
               </span>
               <div>
-                <h3 className="font-heading text-lg font-bold text-slate-900">
+                <h3 className="font-heading text-base sm:text-lg font-bold text-slate-900">
                   {matchScore >= 80
-                    ? "High Hiring Alignment"
+                    ? "Strong Role Alignment"
                     : matchScore >= 60
                     ? "Solid Foundation with Minor Gaps"
-                    : "Foundational Gap Alert"}
+                    : "Notable Gaps to Bridge"}
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Candidate meets {matchedSkills.length} of {targetJob.skills_required.length} required competencies for {targetJob.role}.
+                  Matches {matchedSkills.length} of {targetJob.skills_required.length} required competencies for {targetJob.role}.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
             <button
               onClick={handleCelebrate}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-slate-800 transition-colors"
             >
               <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-              <span>Evaluate Match Readiness</span>
+              <span>Celebrate Fit</span>
             </button>
             <button
               onClick={downloadProfileJSON}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
             >
               <Download className="h-3.5 w-3.5 text-slate-500" />
-              <span>Download Candidate JSON</span>
+              <span>Download Profile</span>
             </button>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="mt-6">
-          <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden p-0.5">
+        <div className="mt-5">
+          <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-700 ${
                 matchScore >= 80
@@ -470,17 +452,14 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
       {/* Matched vs Missing Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Matched Skills */}
-        <div className="rounded-2xl border border-emerald-200/80 bg-white p-6 shadow-xs">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-emerald-100">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-              <h3 className="font-heading text-base font-bold text-slate-900">
-                Verified Proficiencies ({matchedSkills.length})
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <h3 className="font-heading text-sm font-bold text-slate-900">
+                Matched Skills ({matchedSkills.length})
               </h3>
             </div>
-            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
-              Matched Requirements
-            </span>
           </div>
 
           {matchedSkills.length === 0 ? (
@@ -505,7 +484,7 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
                       </span>
                     ) : m.matchType === "direct" ? (
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
-                        Direct Evidence in Profile
+                        Direct match
                       </span>
                     ) : (
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">
@@ -527,17 +506,14 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
         </div>
 
         {/* Missing Skills / Prioritized Gaps */}
-        <div className="rounded-2xl border border-amber-200/80 bg-white p-6 shadow-xs">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-amber-100">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
-              <h3 className="font-heading text-base font-bold text-slate-900">
-                Prioritized Skill Gaps ({missingSkills.length})
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <h3 className="font-heading text-sm font-bold text-slate-900">
+                Skill Gaps ({missingSkills.length})
               </h3>
             </div>
-            <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/60">
-              Needs Augmentation
-            </span>
           </div>
 
           {missingSkills.length === 0 ? (
@@ -561,13 +537,13 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
                   </div>
 
                   <p className="text-slate-600 text-[11px] mb-2 leading-snug">
-                    <strong className="text-slate-800">JD Requirement:</strong> {gap.reason}
+                    <strong className="text-slate-800">Required:</strong> {gap.reason}
                   </p>
 
                   <div className="bg-amber-50/70 border border-amber-200/60 rounded-lg p-2.5 text-[11px] text-amber-900 flex items-start gap-1.5">
                     <BookOpen className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-bold">Remediation Action: </span>
+                      <span className="font-bold">Recommendation: </span>
                       <span>{gap.recommendation}</span>
                     </div>
                   </div>
@@ -585,14 +561,14 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
           className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Talent Check</span>
+          <span>Back</span>
         </button>
 
         <button
           onClick={onRestart}
-          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-slate-800 active:scale-95 transition-all"
+          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-slate-800 active:scale-95 transition-all"
         >
-          <span>Start Over with New Resume</span>
+          <span>Start Over</span>
         </button>
       </div>
     </div>

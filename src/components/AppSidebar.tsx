@@ -115,18 +115,18 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               <button
                 key={item.id}
                 onClick={() => onSelectPage(item.id)}
-                className={`w-full flex items-center gap-3 rounded-lg p-2.5 text-left transition-all group ${
+                className={`w-full flex items-center gap-3 rounded-xl p-2.5 text-left transition-all group ${
                   isActive
-                    ? "bg-white border-l-[3px] border-l-blue-600 text-slate-900 font-semibold shadow-xs"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium border-l-[3px] border-l-transparent"
+                    ? "bg-blue-50 text-blue-700 font-semibold"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
                 }`}
                 title={collapsed ? item.label : undefined}
               >
                 <div
                   className={`flex h-8 w-8 items-center justify-center rounded-lg shrink-0 transition-colors ${
                     isActive
-                      ? "bg-blue-50 text-blue-600"
-                      : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "bg-slate-100 text-slate-500 group-hover:bg-slate-200/80 group-hover:text-slate-700"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -134,12 +134,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 
                 {!collapsed && (
                   <div className="flex-1 truncate">
-                    <span className="text-xs font-semibold truncate block">
+                    <span className={`text-xs font-semibold truncate block ${isActive ? "text-blue-950" : "text-slate-800"}`}>
                       {item.label}
                     </span>
                     <p
                       className={`text-[10px] truncate ${
-                        isActive ? "text-slate-500" : "text-slate-400 group-hover:text-slate-500"
+                        isActive ? "text-blue-600/80" : "text-slate-400 group-hover:text-slate-500"
                       }`}
                     >
                       {item.description}

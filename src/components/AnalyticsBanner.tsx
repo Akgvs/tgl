@@ -1,13 +1,8 @@
 import React from "react";
 import { useProfile } from "../context/ProfileContext";
-import { SAMPLE_CANDIDATES } from "../data/sampleCandidates";
 import {
-  FileText,
-  Sparkles,
-  ArrowRight,
   Database,
-  Upload,
-  RefreshCw
+  Upload
 } from "lucide-react";
 
 interface AnalyticsBannerProps {
@@ -20,54 +15,54 @@ export const AnalyticsBanner: React.FC<AnalyticsBannerProps> = ({ onOpenModal })
   const getCandidateSubtitle = () => {
     switch (activeCandidateId) {
       case "ananya":
-        return "Systems-leaning generalist • Strong fit for SWE-heavy roles";
+        return "Systems-leaning generalist • High SWE fit";
       case "karthik":
-        return "Data-leaning analyst • Strong fit for Data Scientist / Analyst roles";
+        return "Data-leaning analyst • High Data Science fit";
       case "priya":
-        return "Entry-level support-oriented • Best fit for Oracle Financial Services";
+        return "Support & enterprise • Strong Oracle fit";
       case "rohan":
-        return "Strong all-rounder • Competitive fit across SWE, Cloud, and Data";
+        return "Full stack generalist • Broad technical fit";
       default:
         return "Custom candidate profile";
     }
   };
 
   return (
-    <div className="border-b border-indigo-100 bg-gradient-to-r from-indigo-50/90 via-blue-50/60 to-slate-50 px-4 py-3 sm:px-6">
+    <div className="border-b border-indigo-100 bg-gradient-to-r from-indigo-50/80 via-blue-50/50 to-slate-50 px-4 py-3 sm:px-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {/* Left: Analytics Ingestion Status */}
+        {/* Left: Active Candidate Info */}
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-xs">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-xs">
             <Database className="h-4 w-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-indigo-950 uppercase tracking-wider">
-                Analytics Pipeline Inbound
+              <span className="text-xs font-bold text-slate-900">
+                {profile.name}
               </span>
-              <span className="inline-flex items-center rounded-md bg-indigo-100 px-2 py-0.5 text-[11px] font-semibold text-indigo-700">
-                Source: {profile.cv_file || "Role 2 Resume Parsing JSON"}
+              <span className="inline-flex items-center rounded-md bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                {profile.cv_file || "Verified Profile"}
               </span>
             </div>
-            <p className="text-xs text-slate-600 mt-0.5">
-              <span className="font-semibold text-slate-800">{profile.name}</span> — {getCandidateSubtitle()}
+            <p className="text-xs text-slate-500 mt-0.5">
+              {getCandidateSubtitle()}
             </p>
           </div>
         </div>
 
-        {/* Right: Quick Ingestion Switchers & Modal Trigger */}
+        {/* Right: Quick Switchers & Import Trigger */}
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1 bg-white/80 border border-indigo-200/80 p-1 rounded-lg">
-            <span className="text-[11px] font-medium text-slate-500 px-1.5 hidden md:inline">
-              Sample Inputs:
+          <div className="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-xs">
+            <span className="text-[11px] font-semibold text-slate-500 px-1.5 hidden md:inline">
+              Sample Profiles:
             </span>
             {(["ananya", "karthik", "priya", "rohan"] as const).map((key) => (
               <button
                 key={key}
                 onClick={() => switchCandidate(key)}
-                className={`text-[11px] px-2 py-0.5 rounded font-medium transition-all ${
+                className={`text-[11px] px-2.5 py-1 rounded-lg font-medium transition-all ${
                   activeCandidateId === key
-                    ? "bg-indigo-600 text-white font-semibold shadow-xs"
+                    ? "bg-slate-900 text-white font-semibold shadow-xs"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
@@ -78,10 +73,10 @@ export const AnalyticsBanner: React.FC<AnalyticsBannerProps> = ({ onOpenModal })
 
           <button
             onClick={onOpenModal}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 active:scale-95 transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 active:scale-95 transition-all"
           >
             <Upload className="h-3.5 w-3.5" />
-            <span>Ingest Role 2 JSON</span>
+            <span>Import Profile JSON</span>
           </button>
         </div>
       </div>

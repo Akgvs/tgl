@@ -8,11 +8,9 @@ import {
   CertificationsSection
 } from "../components/BeyondResumeSections";
 import {
-  Sparkles,
   ArrowRight,
   ArrowLeft,
   Save,
-  CheckCircle2,
   GraduationCap,
   Award,
   Briefcase,
@@ -31,7 +29,7 @@ export const Page3ProfileBuilder: React.FC<Page3ProfileBuilderProps> = ({
   onBack,
   onOpenContractModal,
 }) => {
-  const { profile, saveProfile, isSaving, validation } = useProfile();
+  const { profile, saveProfile, isSaving } = useProfile();
   const [subTab, setSubTab] = useState<"skills" | "hackathons" | "internships" | "certifications" | "overview">("skills");
 
   return (
@@ -39,31 +37,28 @@ export const Page3ProfileBuilder: React.FC<Page3ProfileBuilderProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700 border border-blue-200/60 mb-2">
-            Step 3 of 5 · Role 3: Profile Builder
-          </span>
-          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Enrich Profile Beyond Resume
+          <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+            Profile Builder
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Augment pre-filled extraction data with hackathon standings, certifications, preferred target roles, and evidence fine-tuning.
+          <p className="mt-1 text-xs sm:text-sm text-slate-500">
+            Fine-tune your verified competencies, hackathons, internships, certifications, and career target preferences.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
           <button
             onClick={saveProfile}
             disabled={isSaving}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-xs"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-xs transition-colors"
           >
-            <Save className="h-3.5 w-3.5" />
-            <span>{isSaving ? "Saving..." : "Save Progress"}</span>
+            <Save className="h-3.5 w-3.5 text-slate-500" />
+            <span>{isSaving ? "Saving..." : "Save Profile"}</span>
           </button>
           <button
             onClick={onNext}
             className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 active:scale-95 transition-all"
           >
-            <span>Proceed to Step 4: Talent Check</span>
+            <span>Continue</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -72,11 +67,11 @@ export const Page3ProfileBuilder: React.FC<Page3ProfileBuilderProps> = ({
       {/* Sub-Tabs navigation */}
       <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-200 pb-2 mb-6 scrollbar-none">
         {[
-          { id: "skills" as const, label: "12-Skillset Matrix", icon: GraduationCap, count: profile.skills.length },
+          { id: "skills" as const, label: "Skills", icon: GraduationCap, count: profile.skills.length },
           { id: "hackathons" as const, label: "Hackathons", icon: Award, count: profile.hackathons.length },
-          { id: "internships" as const, label: "Internships & Exp", icon: Briefcase, count: profile.internships.length },
+          { id: "internships" as const, label: "Experience", icon: Briefcase, count: profile.internships.length },
           { id: "certifications" as const, label: "Certifications", icon: BadgeCheck, count: profile.certifications.length },
-          { id: "overview" as const, label: "Biographical & Roles", icon: User, count: undefined },
+          { id: "overview" as const, label: "Target Roles & Bio", icon: User, count: undefined },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = subTab === tab.id;
@@ -84,19 +79,17 @@ export const Page3ProfileBuilder: React.FC<Page3ProfileBuilderProps> = ({
             <button
               key={tab.id}
               onClick={() => setSubTab(tab.id)}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold whitespace-nowrap transition-all ${
-                isActive
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold whitespace-nowrap transition-all ${isActive
                   ? "bg-slate-900 text-white shadow-xs"
                   : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-slate-900"
-              }`}
+                }`}
             >
               <Icon className="h-4 w-4" />
               <span>{tab.label}</span>
               {tab.count !== undefined && (
                 <span
-                  className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
-                    isActive ? "bg-slate-700 text-white" : "bg-slate-100 text-slate-600"
-                  }`}
+                  className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${isActive ? "bg-slate-700 text-white" : "bg-slate-100 text-slate-600"
+                    }`}
                 >
                   {tab.count}
                 </span>
@@ -119,17 +112,17 @@ export const Page3ProfileBuilder: React.FC<Page3ProfileBuilderProps> = ({
       <div className="mt-8 flex items-center justify-between">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Extraction</span>
+          <span>Back</span>
         </button>
 
         <button
           onClick={onNext}
-          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-blue-700 active:scale-95 transition-all"
+          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 active:scale-95 transition-all"
         >
-          <span>Continue to Step 4: Talent Check</span>
+          <span>Continue</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>

@@ -36,14 +36,14 @@ export const AnalyticsInspector: React.FC<{ onOpenModal: () => void }> = ({ onOp
         <div>
           <div className="flex items-center gap-2">
             <h2 className="font-heading text-xl font-bold tracking-tight text-slate-900">
-              Analytics Ingestion Pipeline (Role 2 → Role 3)
+              Profile Data Ingestion
             </h2>
-            <span className="rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 border border-indigo-200">
-              Input Channel
+            <span className="rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 border border-blue-200">
+              Pipeline Sync
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Role 3 Profile Builder is pre-filled from Resume Parsing and JD Analytics extraction outputs.
+            Candidate profile automatically synchronized from parsed resume data and skill inference.
           </p>
         </div>
 
@@ -110,7 +110,7 @@ export const AnalyticsInspector: React.FC<{ onOpenModal: () => void }> = ({ onOp
               <span>Inbound Data Mapping to Profile Builder</span>
             </h3>
             <p className="text-xs text-slate-500 mb-4">
-              Fields extracted by Role 2 automatically populate Profile Builder fields.
+              Parsed resume fields automatically map to structured profile attributes.
             </p>
 
             <div className="divide-y divide-slate-100 text-xs">
@@ -134,7 +134,7 @@ export const AnalyticsInspector: React.FC<{ onOpenModal: () => void }> = ({ onOp
                 </div>
                 <span className="text-emerald-700 font-semibold flex items-center gap-1">
                   <CheckCircle2 className="h-3.5 w-3.5" />
-                  <span>Mapped to 12-Skillset Matrix</span>
+                  <span>Mapped to Competencies</span>
                 </span>
               </div>
 
@@ -165,7 +165,7 @@ export const AnalyticsInspector: React.FC<{ onOpenModal: () => void }> = ({ onOp
           </div>
 
           <div className="mt-4 rounded-xl bg-blue-50 border border-blue-200 p-3 text-xs text-blue-900 leading-relaxed">
-            <strong>Role 3 Value Add:</strong> Candidate adds beyond-resume signal (hackathon standings, certifications, preferred target roles, and evidence fine-tuning) before saving the canonical contract for Roles 4 & 5.
+            <strong>Profile Enrichment:</strong> Add beyond-resume signals (hackathons, certifications, and career target roles) to unlock deep benchmark analysis and job matching.
           </div>
         </div>
 

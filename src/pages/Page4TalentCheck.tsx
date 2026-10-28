@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
-  Sparkles,
   BarChart2,
   RefreshCw
 } from "lucide-react";
@@ -51,7 +50,7 @@ const COMPANIES: Record<string, CompanyBar> = {
   },
   oracle: {
     id: "oracle",
-    name: "Oracle Financial Services Software",
+    name: "Oracle Financial Services",
     roles: ["Associate Software Engineer", "Application Support Analyst"],
     description: "Strong emphasis on SQL, relational integrity, enterprise Java/OOP, client communication, and incident triage.",
     thresholds: {
@@ -139,41 +138,38 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-100 px-3 py-1 text-xs font-bold text-cyan-800 border border-cyan-200/60 mb-2">
-            Step 4 of 5 · Role 4: Talent Check
-          </span>
-          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Company Bar Benchmark
+          <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+            Company Benchmarks
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Compare your profile across all 12 RADIX skillsets against the target company's expected hiring standard.
+          <p className="mt-1 text-xs sm:text-sm text-slate-500">
+            Compare your profile against company hiring standards and identify readiness gaps.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Back</span>
           </button>
           <button
             onClick={onNext}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 active:scale-95 transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 active:scale-95 transition-all"
           >
-            <span>Proceed to Step 5: Job Matching</span>
+            <span>Continue</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Target Company Selector & Run Button */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs mb-6">
+      {/* Target Company Selector */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-              Select Company to Evaluate:
+              Select Target Company:
             </label>
             <div className="flex flex-wrap gap-2">
               {Object.keys(COMPANIES).map((key) => {
@@ -187,7 +183,7 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                       setSelectedCompanyKey(key);
                       setHasEvaluated(true);
                     }}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
                       isSelected
                         ? "bg-slate-900 text-white border-slate-900 shadow-xs"
                         : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -203,10 +199,10 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
           <button
             onClick={handleRunCheck}
             disabled={isRunningCheck}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-600 px-6 py-3 text-sm font-bold text-white shadow-md hover:bg-cyan-700 active:scale-95 transition-all disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 shrink-0"
           >
-            <RefreshCw className={`h-4 w-4 ${isRunningCheck ? "animate-spin" : ""}`} />
-            <span>{isRunningCheck ? "Evaluating 12 Skillsets..." : "Run Talent Check"}</span>
+            <RefreshCw className={`h-3.5 w-3.5 ${isRunningCheck ? "animate-spin" : ""}`} />
+            <span>{isRunningCheck ? "Evaluating..." : "Run Benchmark"}</span>
           </button>
         </div>
       </div>
@@ -218,14 +214,14 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
           <div>
             <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               <Building2 className="h-4 w-4 text-blue-600" />
-              <span>Target Bar</span>
+              <span>Target Standard</span>
             </div>
-            <h3 className="font-heading text-xl font-bold text-slate-900">{company.name}</h3>
+            <h3 className="font-heading text-lg font-bold text-slate-900">{company.name}</h3>
             <p className="text-xs text-slate-600 mt-2 leading-relaxed">{company.description}</p>
           </div>
 
           <div className="mt-4 pt-3 border-t border-slate-100">
-            <span className="text-[11px] font-semibold text-slate-500 block mb-1">Company Roles:</span>
+            <span className="text-[11px] font-semibold text-slate-500 block mb-1.5">Typical Roles:</span>
             <div className="flex flex-wrap gap-1">
               {company.roles.map((r) => (
                 <span key={r} className="rounded-md bg-blue-50 text-blue-700 px-2 py-0.5 text-[10px] font-medium border border-blue-100">
@@ -248,17 +244,17 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
             </div>
 
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="font-heading text-5xl font-black text-slate-900">{readinessScore}%</span>
+              <span className="font-heading text-4xl sm:text-5xl font-black text-slate-900">{readinessScore}%</span>
               <span
                 className={`text-xs font-bold ${
                   readinessScore >= 80 ? "text-emerald-600" : readinessScore >= 65 ? "text-amber-600" : "text-rose-600"
                 }`}
               >
-                {readinessScore >= 80 ? "Meets Bar" : readinessScore >= 65 ? "Competitive" : "Gaps to Bridge"}
+                {readinessScore >= 80 ? "Meets Bar" : readinessScore >= 65 ? "Competitive" : "Gaps Present"}
               </span>
             </div>
 
-            <div className="w-full bg-slate-100 h-3 rounded-full mt-3 overflow-hidden">
+            <div className="w-full bg-slate-100 h-2.5 rounded-full mt-3 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-700 ${
                   readinessScore >= 80 ? "bg-emerald-500" : readinessScore >= 65 ? "bg-amber-500" : "bg-rose-500"
@@ -278,7 +274,7 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
           <div>
             <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               <AlertCircle className="h-4 w-4 text-amber-600" />
-              <span>Skillset Gaps ({gaps.length})</span>
+              <span>Skill Gaps ({gaps.length})</span>
             </div>
 
             <div className="flex flex-col gap-2 mt-2 max-h-48 overflow-y-auto pr-1">
@@ -288,7 +284,7 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                   <div key={g.category} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs">
                     <div className="flex items-center gap-1.5">
                       <CategoryBadge code={g.category} size="sm" />
-                      <span className="font-medium text-slate-700">{meta.name}</span>
+                      <span className="font-medium text-slate-700">{meta?.name || g.category}</span>
                     </div>
                     <span className="font-mono text-[11px] font-bold text-rose-600">
                       Level {g.cand}/10 (Bar: {g.req})
@@ -299,7 +295,7 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
 
               {gaps.length === 0 && (
                 <div className="p-3 text-center text-xs text-emerald-700 bg-emerald-50 rounded-xl font-medium">
-                  🎉 No gaps identified! Ready for technical rounds.
+                  No gaps identified! Ready for technical rounds.
                 </div>
               )}
             </div>
@@ -307,11 +303,11 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
         </div>
       </div>
 
-      {/* 12-Skillset Detailed Comparison Table */}
+      {/* Competency Comparison Table */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-        <h3 className="font-heading text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <h3 className="font-heading text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
           <BarChart2 className="h-4 w-4 text-blue-600" />
-          <span>Full 12-Skillset Benchmark Breakdown</span>
+          <span>Competency Comparison</span>
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -327,7 +323,7 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <CategoryBadge code={cat} size="sm" />
-                    <span className="font-semibold text-slate-800">{meta.name}</span>
+                    <span className="font-semibold text-slate-800">{meta?.name || cat}</span>
                   </div>
                   <div className="flex items-center gap-2 font-mono text-[11px]">
                     <span className="text-slate-500">Bar: {req}/10</span>
@@ -338,7 +334,7 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                   </div>
                 </div>
 
-                <div className="relative h-2.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                <div className="relative h-2 w-full bg-slate-200 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${isGap ? "bg-amber-500" : "bg-emerald-500"}`}
                     style={{ width: `${(cand / 10) * 100}%` }}
@@ -359,17 +355,17 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
       <div className="mt-8 flex items-center justify-between">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Profile Builder</span>
+          <span>Back</span>
         </button>
 
         <button
           onClick={onNext}
-          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-blue-700 active:scale-95 transition-all"
+          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 active:scale-95 transition-all"
         >
-          <span>Continue to Step 5: Specific Job Matching</span>
+          <span>Continue</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>

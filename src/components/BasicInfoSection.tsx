@@ -72,10 +72,10 @@ export const BasicInfoSection: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="font-heading text-xl font-bold tracking-tight text-slate-900">
-            Candidate Profile & Target Roles
+            Biographical Details & Target Roles
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Core biographical, academic, and aspirational preferences feeding into downstream Talent Check and Skill Matching.
+            Manage your personal information, links, and target career preferences.
           </p>
         </div>
 
@@ -295,7 +295,7 @@ export const BasicInfoSection: React.FC = () => {
               <span>Preferred Target Roles</span>
             </h3>
             <p className="text-[11px] text-slate-500 mb-3">
-              Matched against Role 1 Job Descriptions during Skill Matching.
+              Used for automated skill matching and personalized gap analysis.
             </p>
 
             <div className="flex flex-wrap gap-1.5">
@@ -323,10 +323,10 @@ export const BasicInfoSection: React.FC = () => {
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
             <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
               <Building className="h-4 w-4 text-indigo-600" />
-              <span>Hackathon Scope Companies</span>
+              <span>Target Companies</span>
             </h3>
             <p className="text-[11px] text-slate-500 mb-3">
-              The 3 benchmark companies with local expected skillset data.
+              Companies evaluated during automated hiring benchmark analysis.
             </p>
 
             <div className="flex flex-col gap-2">

@@ -152,6 +152,9 @@ export const PageJdExtraction: React.FC<PageJdExtractionProps> = ({
           <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Job Analysis
           </h1>
+          <p className="mt-1 text-xs sm:text-sm text-slate-500">
+            Select a target role or paste a custom job description to extract required skills and prerequisites.
+          </p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
@@ -403,7 +406,7 @@ export const PageJdExtraction: React.FC<PageJdExtractionProps> = ({
                           <h4 className="text-xs font-bold text-slate-900">{skill.skill_name}</h4>
                           {skill.isImplied ? (
                             <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100/80 px-2 py-0.5 rounded">
-                              ⚡ via {skill.impliedBy}
+                              Inferred via {skill.impliedBy}
                             </span>
                           ) : (
                             <span className="text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
@@ -438,10 +441,10 @@ export const PageJdExtraction: React.FC<PageJdExtractionProps> = ({
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs font-bold text-slate-900">{item.parent}</span>
                 <span className="text-[10px] bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded">
-                  Framework in JD
+                  Required Skill
                 </span>
                 <span className="text-[11px] text-slate-500">
-                  ──implies foundational prerequisites:
+                  ── Implies foundational prerequisites:
                 </span>
               </div>
 

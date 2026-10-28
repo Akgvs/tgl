@@ -162,7 +162,7 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
               <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
                 <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                  <span>Contract Compliance Checklist</span>
+                  <span>Profile Verification Checklist</span>
                 </h4>
                 <ul className="divide-y divide-slate-100 text-xs">
                   <li className="py-2 flex items-center justify-between">
@@ -184,7 +184,7 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                     <span className="text-emerald-700 font-semibold">✓ Compliant</span>
                   </li>
                   <li className="py-2 flex items-center justify-between">
-                    <span className="font-medium text-slate-700">Target Roles defined for Role 5 Matching</span>
+                    <span className="font-medium text-slate-700">Target Roles defined for Job Matching</span>
                     <span className="text-emerald-700 font-semibold">
                       ✓ {profile.preferred_roles?.length || 0} roles selected
                     </span>
@@ -211,10 +211,10 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
           {activeTab === "schema" && (
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
               <h4 className="text-sm font-bold text-slate-900 mb-2">
-                12 RADIX Skill Categories (Contract Specification)
+                Standard Competency Categories
               </h4>
               <p className="text-xs text-slate-500 mb-4">
-                From Page 9 of the brief: Every skill is tagged with exactly one `category_code`.
+                Each verified skill is categorized under one of the primary technical disciplines.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {[

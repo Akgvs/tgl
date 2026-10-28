@@ -227,7 +227,7 @@ export const HackathonsSection: React.FC = () => {
             <Award className="h-8 w-8 text-slate-400 mx-auto mb-2" />
             <h4 className="font-heading text-sm font-bold text-slate-700">No hackathons recorded yet</h4>
             <p className="text-xs text-slate-500 mt-1">
-              Adding hackathons provides strong signal for Role 4 Talent Check.
+              Adding hackathons provides strong signal for technical and system building benchmarks.
             </p>
           </div>
         )}

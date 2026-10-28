@@ -98,10 +98,10 @@ export const AnalyticsIngestModal: React.FC<AnalyticsIngestModalProps> = ({
             </div>
             <div>
               <h3 className="font-heading text-base font-bold text-slate-900">
-                Analytics Ingestion Hub (Role 2 → Role 3)
+                Profile Data Import
               </h3>
               <p className="text-xs text-slate-500">
-                Inbound contract: Pre-fill candidate profile from Resume Parsing & JD Analytics output
+                Load candidate profile from parsed resume JSON or test payload
               </p>
             </div>
           </div>
@@ -118,7 +118,7 @@ export const AnalyticsIngestModal: React.FC<AnalyticsIngestModalProps> = ({
           {/* Quick Benchmark Presets */}
           <div>
             <label className="text-xs font-bold text-slate-700 block mb-2">
-              Select Incoming Test Payload from Role 2 / Role 1:
+              Select Sample Candidate Payload:
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {(["ananya", "karthik", "priya", "rohan"] as const).map((key) => {

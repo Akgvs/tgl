@@ -123,7 +123,7 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
     return list;
   }, [extractedResumeData, filterType, selectedCategoryFilter]);
 
-  // Group skills by Category (SWE, SYSD, COD, SQL, CLOUD, etc.)
+  // Group skills by Category
   const skillsByCategory = useMemo(() => {
     const groups: Partial<Record<CategoryCode, InferredSkillItem[]>> = {};
 
@@ -174,14 +174,11 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider block mb-1">
-            Role 2 · Resume Parsing & Skill Extraction
-          </span>
           <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Resume Skills & Signal
+            Resume Scanner
           </h1>
-          <p className="mt-1 text-xs sm:text-sm text-slate-600">
-            Automated competency extraction categorized by SWE, SYSD, COD, SQL, and Cloud with foundation prerequisites.
+          <p className="mt-1 text-xs sm:text-sm text-slate-500">
+            Automatically extract core competencies and infer prerequisite foundational skills from your resume.
           </p>
         </div>
 
@@ -191,7 +188,7 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Back to Role 1</span>
+            <span>Back</span>
           </button>
 
           <button
@@ -199,35 +196,35 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
           >
             <Upload className="h-3.5 w-3.5" />
-            <span>{showUploadModal ? "Hide Upload" : "Upload / Replace Resume"}</span>
+            <span>{showUploadModal ? "Hide Upload" : "Upload Resume"}</span>
           </button>
 
           <button
             onClick={handlePushToProfileBuilder}
             className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 active:scale-95 transition-all"
           >
-            <span>Proceed to Role 3: Profile Builder</span>
+            <span>Continue</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Upload/Paste Resume Area (Expandable/Collapsible) */}
+      {/* Upload/Paste Resume Area */}
       {showUploadModal && (
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-5 shadow-xs mb-6">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-blue-100">
-            <h3 className="text-xs font-bold text-slate-900">
-              Attach or Paste Your Resume
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 shadow-xs mb-6">
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-200/60">
+            <h3 className="text-xs font-bold text-slate-800">
+              Attach or Paste Resume
             </h3>
 
-            <div className="flex items-center bg-white p-0.5 rounded-lg border border-blue-200 text-xs font-semibold">
+            <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 text-xs font-semibold">
               <button
                 onClick={() => setUploadTab("file")}
                 className={`px-3 py-1 rounded-md transition-all ${
                   uploadTab === "file" ? "bg-blue-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                Upload File (PDF/DOCX)
+                Upload File
               </button>
               <button
                 onClick={() => setUploadTab("paste")}
@@ -241,7 +238,7 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
           </div>
 
           {uploadTab === "file" ? (
-            <div className="text-center p-6 bg-white rounded-xl border-2 border-dashed border-blue-200">
+            <div className="text-center p-6 bg-white rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 transition-colors">
               <input
                 type="file"
                 id="resume-file-inline"
@@ -255,7 +252,7 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
               </p>
               <label
                 htmlFor="resume-file-inline"
-                className="cursor-pointer inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
+                className="cursor-pointer inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-xs transition-colors"
               >
                 <span>Select Document</span>
               </label>
@@ -272,7 +269,7 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
               <div className="flex justify-end">
                 <button
                   onClick={handleParsePastedText}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors"
                 >
                   <Sparkles className="h-3.5 w-3.5" />
                   <span>Extract Skills</span>
@@ -283,12 +280,8 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
         </div>
       )}
 
-      {/* Category Pills Bar (SWE, SYSD, COD, SQL, etc.) */}
+      {/* Category Pills Bar */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-none">
-        <span className="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
-          <Layers className="h-3.5 w-3.5" />
-          <span>Categories:</span>
-        </span>
         <button
           onClick={() => setSelectedCategoryFilter("ALL")}
           className={`px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 transition-all ${
@@ -336,7 +329,7 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
               filterType === "explicit" ? "bg-white text-blue-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            Direct in Resume
+            Direct Mentions
           </button>
           <button
             onClick={() => setFilterType("implied")}
@@ -344,7 +337,7 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
               filterType === "implied" ? "bg-indigo-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            ⚡ Inferred Prerequisites
+            Inferred
           </button>
         </div>
 
@@ -354,26 +347,28 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
           >
             <FileText className="h-3.5 w-3.5" />
-            <span>{viewJson ? "Grouped View" : "View JSON"}</span>
+            <span>{viewJson ? "Skill View" : "View JSON"}</span>
           </button>
-          <button
-            onClick={handleCopyJson}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
-          >
-            <Copy className="h-3.5 w-3.5" />
-            <span>Copy</span>
-          </button>
+          {viewJson && (
+            <button
+              onClick={handleCopyJson}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              <span>Copy</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Grouped Skills View by Category (SWE, SYSD, COD, SQL, etc.) */}
+      {/* Grouped Skills View by Category */}
       {!viewJson ? (
         Object.keys(skillsByCategory).length === 0 ? (
           <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 p-6">
             <p className="text-xs text-slate-500 mb-3">No skills extracted yet. Upload or paste your resume above to extract skills.</p>
             <button
               onClick={() => setShowUploadModal(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-xs"
             >
               <Upload className="h-3.5 w-3.5" />
               <span>Attach Resume Document</span>
@@ -430,7 +425,7 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
 
                               {isImplied ? (
                                 <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100/80 px-2 py-0.5 rounded">
-                                  ⚡ via {skill.impliedBy}
+                                  Inferred via {skill.impliedBy}
                                 </span>
                               ) : (
                                 <span className="text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
@@ -479,13 +474,21 @@ Skills: ${profile.skills.map((s) => s.skill_name).join(", ")}
         </div>
       )}
 
-      {/* Bottom Proceed Action */}
-      <div className="mt-8 flex justify-end">
+      {/* Bottom Actions */}
+      <div className="mt-8 flex items-center justify-between">
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back</span>
+        </button>
+
         <button
           onClick={handlePushToProfileBuilder}
           className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 active:scale-95 transition-all"
         >
-          <span>Proceed to Role 3: Profile Builder</span>
+          <span>Continue</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>

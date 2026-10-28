@@ -18,10 +18,12 @@ import { Page5SkillMatching } from "./pages/Page5SkillMatching";
 import { ContractPreviewModal } from "./components/ContractPreviewModal";
 import {
   Download,
+  FileCode2,
 } from "lucide-react";
 
 const CLERK_PUBLISHABLE_KEY =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ||
+  "pk_test_ZGVjaWRpbmctZ3JhY2tsZS00Mi5jbGVyay5hY2NvdW50cy5kZXYk";
 
 function CandidatePortalContent() {
   const {
@@ -94,19 +96,32 @@ function CandidatePortalContent() {
       >
         {/* Clean Top Header */}
         <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-6 py-3 flex items-center justify-between gap-4">
-          {/* Page Title */}
-          <h2 className="text-sm font-semibold text-slate-900">
-            {ROLE_TITLES[activePage]}
-          </h2>
+          {/* Breadcrumb Title */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-400">RADIX</span>
+            <span className="text-slate-300 text-xs">/</span>
+            <h2 className="text-sm font-bold text-slate-900">
+              {ROLE_TITLES[activePage]}
+            </h2>
+          </div>
 
           {/* Right Actions */}
           <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setIsContractModalOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-xs transition-colors"
+              title="View and export profile data"
+            >
+              <FileCode2 className="h-3.5 w-3.5 text-slate-500" />
+              <span className="hidden sm:inline">Export Data</span>
+            </button>
+
             <button
               onClick={downloadProfileJSON}
               className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 shadow-xs transition-colors"
             >
               <Download className="h-3.5 w-3.5 text-slate-300" />
-              <span className="hidden md:inline">Download</span>
+              <span className="hidden md:inline">Download JSON</span>
             </button>
 
             {/* Live Clerk User Avatar & Menu */}

@@ -45,16 +45,14 @@ export const Header: React.FC<HeaderProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-heading text-base font-bold tracking-tight text-slate-900">
-                RADIX Talent Match
+                RADIX
               </span>
               <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 border border-blue-200/60">
-                Role 3: Profile Builder
+                Profile Builder
               </span>
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-500">
-              <span>Candidate-facing profile engine</span>
-              <span className="text-slate-300">•</span>
-              <span>12-Skillset Framework</span>
+              <span>Talent Intelligence Engine</span>
             </div>
           </div>
         </div>
@@ -130,13 +128,13 @@ export const Header: React.FC<HeaderProps> = ({
           <span>Analytics Input</span>
         </button>
 
-        {/* Export / Handoff JSON */}
+        {/* Export JSON */}
         <button
           onClick={onOpenContractModal}
           className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
         >
           <Share2 className="h-3.5 w-3.5 text-slate-600" />
-          <span className="hidden sm:inline">Role 4/5 Handoff</span>
+          <span className="hidden sm:inline">Export Data</span>
         </button>
 
         {/* Save button */}

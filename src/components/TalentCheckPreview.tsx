@@ -118,14 +118,14 @@ export const TalentCheckPreview: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="font-heading text-xl font-bold tracking-tight text-slate-900">
-              Talent Check Sandbox (Role 4 Simulation)
+              Hiring Bar Benchmark Simulation
             </h2>
             <span className="rounded-full bg-cyan-100 text-cyan-800 text-[10px] font-bold px-2 py-0.5 border border-cyan-200">
-              Downstream Interop Preview
+              Benchmark Preview
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Demonstrating how Role 4 (Talent Check) directly consumes this profile against company skillset expectations.
+            Evaluate candidate profile readiness against target company hiring bars.
           </p>
         </div>
 

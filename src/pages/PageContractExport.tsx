@@ -83,10 +83,10 @@ export const PageContractExport: React.FC<PageContractExportProps> = ({
             </span>
           </div>
           <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Candidate Profile JSON Contract
+            Candidate Profile Export
           </h1>
           <p className="mt-1 text-sm text-slate-600 max-w-3xl">
-            Canonical data contract handoff. Downstream systems (Role 4 Talent Check and Role 5 Job Matching) consume this exact schema to evaluate candidate hiring readiness.
+            Structured candidate data matching standard evaluation and benchmark schemas.
           </p>
         </div>
 
@@ -134,9 +134,9 @@ export const PageContractExport: React.FC<PageContractExportProps> = ({
             <GitPullRequest className="h-6 w-6 text-indigo-600 shrink-0" />
             <div>
               <h4 className="font-heading text-base font-bold text-slate-900">
-                Role 3 → Roles 4 & 5
+                Verified Export
               </h4>
-              <p className="text-xs text-slate-500">Talent Check & Skill Matching</p>
+              <p className="text-xs text-slate-500">Benchmark & Job Fit Ready</p>
             </div>
           </div>
         </div>
