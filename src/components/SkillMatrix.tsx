@@ -124,11 +124,9 @@ export const SkillMatrix: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="font-heading text-xl font-bold tracking-tight text-slate-900">
-            12-Skillset Competency Matrix
+            Skills
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Tagged against the 12 RADIX skill categories with verifiable evidence quotes and confidence ratings.
-          </p>
+
         </div>
 
         <button

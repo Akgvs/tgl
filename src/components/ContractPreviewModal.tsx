@@ -64,7 +64,7 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-heading text-base font-bold text-slate-900">
-                  Shared Data Contract (Role 3 → Role 4 & Role 5)
+                  Data Export
                 </h3>
                 <span
                   className={`rounded-full px-2 py-0.5 text-[11px] font-semibold border ${
@@ -73,12 +73,10 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                       : "bg-rose-50 text-rose-700 border-rose-200"
                   }`}
                 >
-                  {validation.isValid ? "100% Valid Contract" : `${validation.errors.length} Issues`}
+                  {validation.isValid ? "Valid" : `${validation.errors.length} Issues`}
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
-                RADIX Participant Brief Page 10 Schema: Candidate Profile Handoff
-              </p>
+
             </div>
           </div>
           <button
@@ -100,7 +98,7 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
-              Canonical JSON Export
+              JSON
             </button>
             <button
               onClick={() => setActiveTab("validation")}
@@ -110,7 +108,7 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
-              <span>Validation Report</span>
+              <span>Validation</span>
               <span
                 className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
                   validation.isValid ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
@@ -127,7 +125,7 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
-              12 RADIX Categories Spec
+              Categories
             </button>
           </div>
 
@@ -245,15 +243,13 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-slate-200 px-6 py-3.5 bg-slate-50">
-          <span className="text-xs text-slate-500">
-            Handoff target: Role 4 (Talent Check) & Role 5 (Skill Matching)
-          </span>
+        <div className="flex items-center justify-end border-t border-slate-200 px-6 py-3.5 bg-slate-50">
+
           <button
             onClick={onClose}
             className="rounded-lg bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
           >
-            Close Preview
+            Close
           </button>
         </div>
       </div>

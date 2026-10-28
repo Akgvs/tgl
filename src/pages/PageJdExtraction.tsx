@@ -150,35 +150,19 @@ export const PageJdExtraction: React.FC<PageJdExtractionProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Company Job Description Parser
+            Job Analysis
           </h1>
-          <p className="mt-1 text-xs sm:text-sm text-slate-600">
-            Extracted requirements categorized by Software Engineering (SWE), System Design (SYSD), Coding (COD), SQL, and Cloud.
-          </p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
           <button
-            onClick={handleCopyJson}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
-          >
-            <Copy className="h-3.5 w-3.5" />
-            <span>Copy JSON</span>
-          </button>
-
-          <button
-            onClick={handleDownloadJson}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
-          >
-            <Download className="h-3.5 w-3.5" />
-            <span>Download</span>
-          </button>
-
-          <button
-            onClick={handleSendToJobMatching}
+            onClick={() => {
+              if (onNext) onNext();
+              else handleSendToJobMatching();
+            }}
             className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 active:scale-95 transition-all"
           >
-            <span>Handoff to Job Matching</span>
+            <span>Continue</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -279,10 +263,6 @@ export const PageJdExtraction: React.FC<PageJdExtractionProps> = ({
 
       {/* Category Pills Bar (SWE, SYSD, COD, SQL, etc.) */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-none">
-        <span className="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
-          <Layers className="h-3.5 w-3.5" />
-          <span>Categories:</span>
-        </span>
         <button
           onClick={() => setSelectedCategoryFilter("ALL")}
           className={`px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 transition-all ${
@@ -324,7 +304,7 @@ export const PageJdExtraction: React.FC<PageJdExtractionProps> = ({
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            Grouped by Category
+            Skills
           </button>
           <button
             onClick={() => setViewMode("dependency")}
@@ -334,7 +314,7 @@ export const PageJdExtraction: React.FC<PageJdExtractionProps> = ({
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            Prerequisite Flow
+            Dependencies
           </button>
           <button
             onClick={() => setViewMode("json")}
@@ -344,7 +324,7 @@ export const PageJdExtraction: React.FC<PageJdExtractionProps> = ({
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            JSON Contract
+            JSON
           </button>
         </div>
 
@@ -372,7 +352,7 @@ export const PageJdExtraction: React.FC<PageJdExtractionProps> = ({
                 filterType === "implied" ? "bg-indigo-600 text-white" : "bg-white text-slate-600 border border-slate-200"
               }`}
             >
-              ⚡ Implied
+              Implied
             </button>
           </div>
         )}
@@ -505,14 +485,7 @@ export const PageJdExtraction: React.FC<PageJdExtractionProps> = ({
       )}
 
       {/* Bottom Action */}
-      <div className="mt-8 flex items-center justify-between">
-        <button
-          onClick={handleSendToJobMatching}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-xs"
-        >
-          <span>Handoff to Role 5 (Job Matching)</span>
-        </button>
-
+      <div className="mt-8 flex items-center justify-end">
         <button
           onClick={() => {
             if (onNext) onNext();
@@ -520,7 +493,7 @@ export const PageJdExtraction: React.FC<PageJdExtractionProps> = ({
           }}
           className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 active:scale-95 transition-all"
         >
-          <span>Proceed to Role 2: Resume Parsing</span>
+          <span>Continue</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>

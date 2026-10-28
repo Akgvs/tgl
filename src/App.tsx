@@ -17,15 +17,11 @@ import { Page4TalentCheck } from "./pages/Page4TalentCheck";
 import { Page5SkillMatching } from "./pages/Page5SkillMatching";
 import { ContractPreviewModal } from "./components/ContractPreviewModal";
 import {
-  ChevronRight,
   Download,
-  Briefcase,
-  ShieldCheck
 } from "lucide-react";
 
 const CLERK_PUBLISHABLE_KEY =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ||
-  "pk_test_ZGVjaWRpbmctZ3JhY2tsZS00Mi5jbGVyay5hY2NvdW50cy5kZXYk";
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 function CandidatePortalContent() {
   const {
@@ -69,17 +65,17 @@ function CandidatePortalContent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
 
-  const ROLE_TITLES: Record<FlowRolePage, { role: string; title: string }> = {
-    role1_jd: { role: "Role 1", title: "Job Description Analytics & Prerequisite Engine" },
-    role2_resume: { role: "Role 2", title: "Resume Parsing & Skills Signal" },
-    role3_profile: { role: "Role 3", title: "Profile Builder (Enrich Beyond Resume)" },
-    role4_talent_check: { role: "Role 4", title: "Talent Check Hiring Bars" },
-    role5_matching: { role: "Role 5", title: "Job Skill Matching & Gap Report" },
+  const ROLE_TITLES: Record<FlowRolePage, string> = {
+    role1_jd: "Job Analysis",
+    role2_resume: "Resume Scanner",
+    role3_profile: "Profile Builder",
+    role4_talent_check: "Benchmarks",
+    role5_matching: "Job Match",
   };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-body flex selection:bg-blue-600 selection:text-white">
-      {/* Fixed Left-Side Column Navigation (5 Roles, JD First) */}
+      {/* Fixed Left-Side Column Navigation */}
       <AppSidebar
         activePage={activePage}
         onSelectPage={(page) => {
@@ -91,48 +87,20 @@ function CandidatePortalContent() {
         onOpenContractModal={() => setIsContractModalOpen(true)}
       />
 
-      {/* Main Content Area (Spacious & Clean Layout, offset by sidebar width) */}
+      {/* Main Content Area */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 min-h-screen ${
-          isSidebarCollapsed ? "ml-20" : "ml-64"
-        }`}
+        className={`flex-1 flex flex-col transition-all duration-300 min-h-screen ${isSidebarCollapsed ? "ml-20" : "ml-64"
+          }`}
       >
-        {/* Minimal Clean Top Header */}
+        {/* Clean Top Header */}
         <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-6 py-3 flex items-center justify-between gap-4">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-xs">
-            <span className="font-semibold text-slate-500">RADIX Portal</span>
-            <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
-            <span className="font-mono font-bold text-blue-600">
-              {ROLE_TITLES[activePage].role}
-            </span>
-            <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
-            <span className="font-bold text-slate-800 truncate">
-              {ROLE_TITLES[activePage].title}
-            </span>
-          </div>
+          {/* Page Title */}
+          <h2 className="text-sm font-semibold text-slate-900">
+            {ROLE_TITLES[activePage]}
+          </h2>
 
           {/* Right Actions */}
           <div className="flex items-center gap-2.5">
-            {activeJdResult && (
-              <button
-                onClick={() => setActivePage("role1_jd")}
-                className="hidden lg:inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100 transition-colors"
-                title="View parsed JD"
-              >
-                <Briefcase className="h-3 w-3 text-amber-700" />
-                <span className="truncate max-w-[130px]">{activeJdResult.company}: {activeJdResult.title}</span>
-              </button>
-            )}
-
-            <button
-              onClick={() => setIsContractModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-xs"
-            >
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-              <span className="hidden sm:inline">Contract JSON</span>
-            </button>
-
             <button
               onClick={downloadProfileJSON}
               className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 shadow-xs transition-colors"
@@ -148,7 +116,7 @@ function CandidatePortalContent() {
           </div>
         </header>
 
-        {/* Clean 5-Role Main Canvas (1 page per role, JD at first) */}
+        {/* Main Canvas */}
         <main className="flex-1 pb-16">
           {activePage === "role1_jd" && (
             <PageJdExtraction
