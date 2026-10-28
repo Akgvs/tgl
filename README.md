@@ -37,6 +37,10 @@ Every skill is categorized with exactly one `category_code`:
 
 ### 1. Python Backend (FastAPI on Port 8000)
 ```powershell
+python -m venv .venv
+.venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+Copy-Item .env.example .env      # macOS/Linux: cp .env.example .env  (then add GROQ_API_KEY)
 python -m uvicorn server.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 Endpoints:
@@ -48,6 +52,11 @@ Endpoints:
 - `GET /api/contract/download` — Download `candidate_profile.json`
 - `GET /api/talent-check-bars` — Company skillset thresholds snapshot
 - **`POST /api/resume/extract-skills`** — Upload a resume (PDF/DOCX/TXT) and extract skills via Groq LLM
+- **`POST /api/jd/analyze`** — Role 1: upload a JD (PDF/DOCX/TXT) → skills in the shared format, with evidence and a 12-category demand profile (also `/api/jd/analyze-text`, `/api/jd/samples`)
+- **`GET /api/jd/active/contract`** — Role 1 → Role 5 handoff: the active JD's skill list in the shared format
+- **`POST /api/match`** — Role 5: match candidate skills against a JD skill list (score, matched, gaps)
+
+JD Analytics design and LLM options: [docs/JD_ANALYTICS_PLAN.md](docs/JD_ANALYTICS_PLAN.md) · [docs/LLM_SETUP.md](docs/LLM_SETUP.md)
 
 ### 2. React Frontend (Vite on Port 5173)
 ```powershell
