@@ -46,13 +46,85 @@ Endpoints:
 - `POST /api/profile/ingest-analytics` — Ingest inbound payload from Role 2 / Role 1
 - `GET /api/contract/export` — Role 4 & Role 5 canonical handoff
 - `GET /api/contract/download` — Download `candidate_profile.json`
-- `GET /api/talent-check-bars` — Company skillset thresholds snapshot (`Google LLC`, `Microsoft Corporation`, `Oracle Financial Services Software`)
+- `GET /api/talent-check-bars` — Company skillset thresholds snapshot
+- **`POST /api/resume/extract-skills`** — Upload a resume (PDF/DOCX/TXT) and extract skills via Groq LLM
 
 ### 2. React Frontend (Vite on Port 5173)
 ```powershell
 npm run dev
 ```
 Open [http://127.0.0.1:5173/](http://127.0.0.1:5173/)
+
+---
+
+## 🤖 Groq LLM — Resume Skill Extraction Setup
+
+The Resume Scanner uses **Groq** to extract skills intelligently from uploaded resumes using a hosted LLM.
+
+### Step 1 — Obtain a Groq API Key
+
+1. Visit [https://console.groq.com/keys](https://console.groq.com/keys)
+2. Sign in or create a free account.
+3. Click **Create API key** and copy the key.
+
+### Step 2 — Configure the Key Locally
+
+Create a `.env` file in the project root (if it does not already exist):
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then open `.env` and fill in your key:
+
+```
+GROQ_API_KEY=gsk_your_actual_key_here
+```
+
+> ⚠️ **Never commit your real `.env` file to source control.**  
+> The `.gitignore` already excludes it.
+
+### Step 3 — Restart the Backend
+
+After editing `.env`, restart the FastAPI server:
+
+```powershell
+python -m uvicorn server.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+`python-dotenv` automatically loads the `.env` file on startup.
+
+### Step 4 — Test Resume Skill Extraction Locally
+
+Upload any PDF, DOCX, or TXT resume on the **Resume Scanner** page in the UI, or call the endpoint directly:
+
+```powershell
+curl -X POST http://127.0.0.1:8000/api/resume/extract-skills `
+  -F "file=@path\to\resume.pdf"
+```
+
+A successful response looks like:
+
+```json
+{
+  "filename": "resume.pdf",
+  "skills_extracted": 18,
+  "skills": [
+    {
+      "skill_name": "React",
+      "category_code": "SWE",
+      "mention_type": "explicit",
+      "confidence": "high",
+      "evidence": "Built a real-time dashboard using React and TypeScript"
+    }
+  ]
+}
+```
+
+**Troubleshooting:**
+- HTTP 503 → `GROQ_API_KEY` is missing or empty — add it to `.env` and restart.
+- HTTP 502 → Groq API returned an error — check your key and network connectivity.
+- HTTP 415 → Unsupported file type — use PDF, DOCX, or TXT only.
 
 ---
 

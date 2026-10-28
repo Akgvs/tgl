@@ -5,12 +5,23 @@ Reference: Participant Brief October 2026, Pages 8-10, 13
 """
 
 import os
+import logging
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from pydantic import ValidationError
+
+# Load .env file when present (development convenience)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv not installed — rely on shell environment
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 from .models import (
     CandidateProfile,
@@ -172,6 +183,78 @@ async def upload_cv_file(file: UploadFile = File(...)):
         "message": f"File '{file.filename}' uploaded and attached to active profile.",
         "filename": file.filename,
         "size_bytes": len(content)
+    }
+
+
+# ---------------------------------------------------------------------------
+# Groq LLM Resume Skill Extraction
+# ---------------------------------------------------------------------------
+
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
+ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt"}
+
+@app.post("/api/resume/extract-skills")
+async def extract_resume_skills(file: UploadFile = File(...)):
+    """
+    Upload a resume (PDF, DOCX, or TXT) and extract skills using Groq LLM.
+
+    Returns structured skill data compatible with the Shared Data Contract.
+    The GROQ_API_KEY environment variable must be set before calling this endpoint.
+    """
+    from .groq_service import extract_skills_with_groq, extract_text_from_file
+
+    # --- Validate file type ---
+    filename: str = file.filename or ""
+    ext = Path(filename).suffix.lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=415,
+            detail=(
+                f"Unsupported file type '{ext}'. "
+                "Please upload a PDF, DOCX, or TXT file."
+            ),
+        )
+
+    # --- Read file with size guard ---
+    content = await file.read(MAX_UPLOAD_BYTES + 1)
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail="File exceeds the 10 MB size limit.",
+        )
+
+    # --- Extract text ---
+    try:
+        resume_text = extract_text_from_file(filename, content)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    # --- Call Groq ---
+    try:
+        skills = extract_skills_with_groq(resume_text)
+    except RuntimeError as exc:
+        # Missing API key — configuration error
+        logger.error("Groq configuration error: %s", exc)
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except ValueError as exc:
+        # Malformed LLM output
+        logger.error("Groq output validation error: %s", exc)
+        raise HTTPException(
+            status_code=502,
+            detail=f"Skill extraction failed: {exc}",
+        ) from exc
+    except Exception as exc:
+        # Provider errors, timeouts, etc.
+        logger.error("Groq API error: %s", exc)
+        raise HTTPException(
+            status_code=502,
+            detail=f"Groq API error: {exc}",
+        ) from exc
+
+    return {
+        "filename": filename,
+        "skills_extracted": len(skills),
+        "skills": skills,
     }
 
 if __name__ == "__main__":

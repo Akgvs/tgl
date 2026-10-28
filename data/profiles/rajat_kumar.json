@@ -1,0 +1,262 @@
+{
+  "id": "rajat_kumar",
+  "name": "Rajat Kumar",
+  "email": "rajat28012006@gmail.com",
+  "phone": "+91 98765 43210",
+  "education": "B.Tech in Computer Science and Engineering, 2024",
+  "institution": null,
+  "cgpa": "8.5",
+  "graduation_year": "2024",
+  "linkedin": null,
+  "github": null,
+  "portfolio": null,
+  "summary": null,
+  "skills": [
+    {
+      "skill_name": "Django",
+      "category_code": "SWE",
+      "evidence": "Verified in candidate resume text and project descriptions.",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Python 3",
+      "category_code": "COD",
+      "evidence": "\u26a1 Inferred prerequisite from candidate mastery of Django: Core language prerequisite for Django models, views, and management commands.",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "SQL & Relational Schema Design",
+      "category_code": "SQL",
+      "evidence": "\u26a1 Inferred prerequisite from candidate mastery of Django: Database prerequisite: Django ORM requires understanding migrations, relational foreign keys, and indexes.",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "MVC / MVT Architecture",
+      "category_code": "OOD",
+      "evidence": "\u26a1 Inferred prerequisite from candidate mastery of Django: Design pattern prerequisite: Separation of data models, template views, and business logic.",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "RESTful API Design",
+      "category_code": "SWE",
+      "evidence": "\u26a1 Inferred prerequisite from candidate mastery of Django: Endpoint design prerequisite for Django REST Framework APIs.",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "JavaScript",
+      "category_code": "COD",
+      "evidence": "JavaScript (ES2023)",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "TypeScript",
+      "category_code": "COD",
+      "evidence": "TypeScript",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "React.js",
+      "category_code": "SWE",
+      "evidence": "React.js",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Next.js",
+      "category_code": "SWE",
+      "evidence": "Next.js",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Vite",
+      "category_code": "SWE",
+      "evidence": "Vite",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "HTML5",
+      "category_code": "OTHER",
+      "evidence": "HTML5",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "CSS3",
+      "category_code": "OTHER",
+      "evidence": "CSS3",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Tailwind CSS",
+      "category_code": "SWE",
+      "evidence": "Tailwind CSS",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "shadcn/ui",
+      "category_code": "OTHER",
+      "evidence": "shadcn/ui",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "Node.js",
+      "category_code": "SWE",
+      "evidence": "Node.js",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Express.js",
+      "category_code": "SWE",
+      "evidence": "Express.js",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "REST APIs",
+      "category_code": "SWE",
+      "evidence": "REST APIs",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "WebSockets",
+      "category_code": "NETW",
+      "evidence": "WebSockets",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Socket.IO",
+      "category_code": "NETW",
+      "evidence": "Socket.IO",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "LiveKit",
+      "category_code": "OTHER",
+      "evidence": "LiveKit",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "PostgreSQL",
+      "category_code": "SQL",
+      "evidence": "PostgreSQL",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "MongoDB",
+      "category_code": "OTHER",
+      "evidence": "MongoDB",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Git",
+      "category_code": "SWE",
+      "evidence": "Git",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "GitHub",
+      "category_code": "OTHER",
+      "evidence": "GitHub",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "Docker",
+      "category_code": "CLOUD",
+      "evidence": "Docker",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "GitHub Actions",
+      "category_code": "CLOUD",
+      "evidence": "GitHub Actions",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Vercel",
+      "category_code": "CLOUD",
+      "evidence": "Vercel",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Render",
+      "category_code": "CLOUD",
+      "evidence": "Render",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Postman",
+      "category_code": "SWE",
+      "evidence": "Postman",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Component-Based Architecture",
+      "category_code": "OOD",
+      "evidence": "Component-Based Architecture",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "State Management",
+      "category_code": "OOD",
+      "evidence": "State Management",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "Responsive Design",
+      "category_code": "OOD",
+      "evidence": "Responsive Design",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "Accessibility",
+      "category_code": "OTHER",
+      "evidence": "Accessibility (Semantic HTML, ARIA)",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "Performance Optimization",
+      "category_code": "OTHER",
+      "evidence": "Performance Optimization",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "Code Splitting",
+      "category_code": "SWE",
+      "evidence": "Code Splitting",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "Lazy Loading",
+      "category_code": "SWE",
+      "evidence": "Lazy Loading",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "SSR/CSR",
+      "category_code": "SWE",
+      "evidence": "SSR/CSR",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "Linux",
+      "category_code": "OS",
+      "evidence": "Docker",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "CI/CD",
+      "category_code": "CLOUD",
+      "evidence": "GitHub Actions",
+      "confidence": "medium"
+    }
+  ],
+  "hackathons": [],
+  "internships": [],
+  "certifications": [],
+  "preferred_roles": [
+    "Full Stack Developer",
+    "Software Engineer"
+  ],
+  "preferred_companies": [],
+  "preferred_mode": "Hybrid",
+  "cv_file": "Rajat_Kumar_Frontend_Resume1.pdf",
+  "cv_uploaded_at": "2026-10-28T17:17:05.079Z",
+  "last_updated": "2026-10-28T17:17:58.149341+00:00"
+}
