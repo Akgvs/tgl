@@ -2,15 +2,17 @@ import React, { useState } from "react";
 import { useProfile } from "../context/ProfileContext";
 import {
   Upload,
-  FileText,
   CheckCircle2,
   ArrowRight,
   Sparkles,
-  FileCode,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 import { extractSkillsAndPrerequisitesFromResume } from "../lib/skillInferenceEngine";
+import type { InferredSkillItem } from "../lib/skillInferenceEngine";
+import { extractSkillsFromResumeFile, GroqExtractedSkill } from "../lib/api";
+import { CategoryCode } from "../types/contract";
 
 interface Page1UploadResumeProps {
   onNext: () => void;
@@ -22,6 +24,20 @@ export const Page1UploadResume: React.FC<Page1UploadResumeProps> = ({ onNext }) 
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [resumeText, setResumeText] = useState<string>("");
   const [inputTab, setInputTab] = useState<"file" | "paste">("file");
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  /** Convert Groq skill output to InferredSkillItem[] */
+  function groqSkillsToInferred(groqSkills: GroqExtractedSkill[]): InferredSkillItem[] {
+    return groqSkills.map((s, i) => ({
+      id: `groq_p1_${i}_${Date.now()}`,
+      skill_name: s.skill_name,
+      category_code: (s.category_code as CategoryCode) ?? "OTHER",
+      evidence: s.evidence,
+      confidence: s.confidence,
+      isImplied: s.mention_type === "implied",
+      impliedBy: s.mention_type === "implied" ? "Groq LLM Inference" : undefined,
+    }));
+  }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -30,9 +46,10 @@ export const Page1UploadResume: React.FC<Page1UploadResumeProps> = ({ onNext }) 
     }
   };
 
-  const processFile = (file: File) => {
+  const processFile = async (file: File) => {
     setIsProcessing(true);
     setUploadedFileName(file.name);
+    setUploadError(null);
 
     if (file.name.endsWith(".json")) {
       const reader = new FileReader();
@@ -56,23 +73,53 @@ export const Page1UploadResume: React.FC<Page1UploadResumeProps> = ({ onNext }) 
         }
       };
       reader.readAsText(file);
-    } else {
-      // Simulate file parse and extract basic skills
+      return;
+    }
+
+    // Try Groq backend first
+    try {
+      const result = await extractSkillsFromResumeFile(file);
+      const inferredSkills = groqSkillsToInferred(result.skills);
+      const explicitSkills = inferredSkills.filter((s) => !s.isImplied);
+      const impliedSkills = inferredSkills.filter((s) => s.isImplied);
+
+      // Build a minimal ExtractedResumeResult shape
+      const extracted = extractSkillsAndPrerequisitesFromResume(
+        `Name: ${user?.name || "Candidate"}\nSkills: ${inferredSkills.map(s => s.skill_name).join(", ")}`,
+        []
+      );
+      applyExtractedResumeToProfile({
+        ...extracted,
+        explicitSkills,
+        impliedSkills,
+        allSkills: inferredSkills,
+      });
+      updateProfile({ cv_file: file.name, cv_uploaded_at: new Date().toISOString() });
+      toast.success(
+        `Groq extracted ${result.skills_extracted} skill${result.skills_extracted !== 1 ? "s" : ""} from ${file.name}`
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      setUploadError(msg);
+      toast.error(`Groq extraction failed: ${msg}. Using local engine.`);
+
+      // Local fallback
       const reader = new FileReader();
       reader.onload = (event) => {
         const text = (event.target?.result as string) || "";
         const extracted = extractSkillsAndPrerequisitesFromResume(
-          text.length > 20 ? text : `Candidate: ${user?.name || "User"}\nSkills: React, TypeScript, Python, SQL`
+          text.length > 20
+            ? text
+            : `Candidate: ${user?.name || "User"}\nSkills: React, TypeScript, Python, SQL`
         );
         applyExtractedResumeToProfile(extracted);
         updateProfile({ cv_file: file.name, cv_uploaded_at: new Date().toISOString() });
-        setIsProcessing(false);
-        toast.success(`Parsed ${file.name}`);
+        toast.success(`Parsed ${file.name} (local engine)`);
       };
-      reader.onerror = () => {
-        setIsProcessing(false);
-      };
+      reader.onerror = () => { /* silent */ };
       reader.readAsText(file);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -130,7 +177,7 @@ export const Page1UploadResume: React.FC<Page1UploadResumeProps> = ({ onNext }) 
           <input
             type="file"
             id="resume-file-input"
-            accept=".pdf,.docx,.doc,.json,.txt"
+            accept=".pdf,.docx,.doc,.txt"
             className="hidden"
             onChange={handleFileUpload}
           />
@@ -143,16 +190,33 @@ export const Page1UploadResume: React.FC<Page1UploadResumeProps> = ({ onNext }) 
             Drag & drop your resume file here
           </h3>
           <p className="text-xs text-slate-500 mb-6">
-            Supports PDF, DOCX, TXT, or JSON (up to 10 MB)
+            Supports PDF, DOCX, or TXT (up to 10 MB)
           </p>
 
           <label
             htmlFor="resume-file-input"
-            className="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all"
+            className={`cursor-pointer inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all ${
+              isProcessing ? "opacity-50 pointer-events-none" : ""
+            }`}
           >
-            <Upload className="h-4 w-4" />
-            <span>Browse Document</span>
+            {isProcessing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4" />
+            )}
+            <span>{isProcessing ? "Extracting with Groq…" : "Browse Document"}</span>
           </label>
+
+          {/* Upload error */}
+          {uploadError && (
+            <div className="mt-4 mx-auto max-w-md flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-left">
+              <AlertCircle className="h-3.5 w-3.5 text-red-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[11px] font-semibold text-red-700">Backend extraction failed</p>
+                <p className="text-[11px] text-red-600 mt-0.5">{uploadError}</p>
+              </div>
+            </div>
+          )}
 
           {/* Selected File Card */}
           {uploadedFileName && (

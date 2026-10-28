@@ -105,6 +105,52 @@ export async function ingestAnalyticsData(payload: ExtractedSkillListInput): Pro
   return updated;
 }
 
+// ---------------------------------------------------------------------------
+// Groq LLM Resume Skill Extraction
+// ---------------------------------------------------------------------------
+
+export interface GroqExtractedSkill {
+  skill_name: string;
+  category_code: string;
+  mention_type: "explicit" | "implied";
+  confidence: "high" | "medium" | "low";
+  evidence: string;
+}
+
+export interface GroqExtractionResult {
+  filename: string;
+  skills_extracted: number;
+  skills: GroqExtractedSkill[];
+}
+
+/**
+ * Upload a resume file to the backend and extract skills via Groq LLM.
+ * The API key is kept server-side and is never exposed to the browser.
+ */
+export async function extractSkillsFromResumeFile(
+  file: File
+): Promise<GroqExtractionResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API_BASE}/resume/extract-skills`, {
+    method: "POST",
+    body: formData,
+    signal: AbortSignal.timeout(90_000), // 90s — LLM calls can be slow
+  });
+
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`;
+    try {
+      const body = await res.json();
+      detail = body.detail || detail;
+    } catch {}
+    throw new Error(detail);
+  }
+
+  return res.json() as Promise<GroqExtractionResult>;
+}
+
 export async function fetchCompanySkillsets(): Promise<TalentCheckCompanyDataset> {
   try {
     const res = await fetch(`${API_BASE}/talent-check-bars`, { signal: AbortSignal.timeout(2000) });
