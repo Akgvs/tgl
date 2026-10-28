@@ -1,24 +1,29 @@
 import { CategoryCode, CandidateProfile, RADIX_SKILL_CATEGORIES } from "../types/contract";
+import rawDataset from "../../data/talent_check_company_skillsets.json";
 
 /**
  * RADIX Hackathon — Talent Check Company Skillset Expectations
- * Loaded from talent_check_company_skillsets.json (Participant Brief Page 11)
- * Covers all 12 RADIX skillsets for:
- *  - Google LLC
- *  - Microsoft Corporation
- *  - Oracle Financial Services Software
+ * Loaded from talent_check_company_skillsets.json (generated from Supabase staging_company_skill_levels)
+ * Covers all 116 tech companies with the 3 canonical hackathon targets:
+ *  - Google LLC (Subsidiary of Alphabet Inc.) [ID 4]
+ *  - Microsoft Corporation [ID 78]
+ *  - Oracle Financial Services Software Limited [ID 24]
  */
 
 export interface CompanySkillsetExpectation {
+  id?: number;
   company_id: string;
   name: string;
   locations: string[];
   roles: string[];
   description: string;
   skill_thresholds: Record<Exclude<CategoryCode, "OTHER">, number>;
+  skill_levels?: Record<Exclude<CategoryCode, "OTHER">, string>;
 }
 
 export interface TalentCheckCompanyDataset {
+  source?: string;
+  total_companies?: number;
   companies: {
     google: CompanySkillsetExpectation;
     microsoft: CompanySkillsetExpectation;
@@ -30,82 +35,14 @@ export interface TalentCheckCompanyDataset {
 /**
  * Canonical 12-skillset expectation dataset matching talent_check_company_skillsets.json
  */
-export const TALENT_CHECK_COMPANY_SKILLSETS: TalentCheckCompanyDataset = {
-  companies: {
-    google: {
-      company_id: "google",
-      name: "Google LLC",
-      locations: ["Bengaluru, India (Hybrid)", "Bengaluru, India"],
-      roles: [
-        "Software Engineer (SWE)",
-        "Data Scientist"
-      ],
-      skill_thresholds: {
-        COD: 9,
-        DSA: 9,
-        OOD: 8,
-        APTI: 9,
-        COMM: 8,
-        AI: 8,
-        CLOUD: 7,
-        SQL: 7,
-        SWE: 9,
-        SYSD: 9,
-        NETW: 8,
-        OS: 8
-      },
-      description: "High bar in algorithmic problem solving (DSA 9/10), deep systems/OS, and scalable architecture."
-    },
-    microsoft: {
-      company_id: "microsoft",
-      name: "Microsoft Corporation",
-      locations: ["Hyderabad, India"],
-      roles: [
-        "Software Engineer",
-        "Data Analyst"
-      ],
-      skill_thresholds: {
-        COD: 8,
-        DSA: 8,
-        OOD: 8,
-        APTI: 8,
-        COMM: 8,
-        AI: 7,
-        CLOUD: 8,
-        SQL: 8,
-        SWE: 8,
-        SYSD: 8,
-        NETW: 7,
-        OS: 7
-      },
-      description: "Balanced high bar in SWE, cloud computing (Azure), enterprise design patterns, and DSA."
-    },
-    oracle: {
-      company_id: "oracle",
-      name: "Oracle Financial Services Software",
-      locations: ["Bengaluru / Mumbai, India", "Bengaluru / Chennai, India"],
-      roles: [
-        "Associate Software Engineer",
-        "Application Support Analyst"
-      ],
-      skill_thresholds: {
-        COD: 7,
-        DSA: 6,
-        OOD: 7,
-        APTI: 7,
-        COMM: 8,
-        AI: 4,
-        CLOUD: 5,
-        SQL: 8,
-        SWE: 7,
-        SYSD: 5,
-        NETW: 6,
-        OS: 6
-      },
-      description: "Strong emphasis on SQL, relational integrity, enterprise Java/OOP, client communication, and support triage."
-    }
-  }
-};
+export const TALENT_CHECK_COMPANY_SKILLSETS: TalentCheckCompanyDataset = rawDataset as TalentCheckCompanyDataset;
+
+/**
+ * List of all 116 companies available in the dataset
+ */
+export const ALL_COMPANIES_LIST: CompanySkillsetExpectation[] = Object.values(
+  TALENT_CHECK_COMPANY_SKILLSETS.companies
+);
 
 export const ALL_12_SKILLSET_CODES: Array<Exclude<CategoryCode, "OTHER">> = [
   "COD",
@@ -124,7 +61,7 @@ export const ALL_12_SKILLSET_CODES: Array<Exclude<CategoryCode, "OTHER">> = [
 
 /**
  * Evaluates candidate competency level (1-10 scale) across all 12 skillsets
- * based on verified skills, confidence, evidence depth, hackathons, and internships.
+ * based on verified skills, confidence, evidence depth, hackathons, internships, and certifications.
  */
 export function computeCandidateCompetencyScores(
   profile: CandidateProfile
@@ -262,6 +199,7 @@ export function computeCandidateCompetencyScores(
 export interface SkillGapItem {
   category: Exclude<CategoryCode, "OTHER">;
   req: number;
+  rawLevel?: string;
   cand: number;
   gap: number;
   name: string;
@@ -271,6 +209,7 @@ export interface SkillGapItem {
 export interface SkillStrengthItem {
   category: Exclude<CategoryCode, "OTHER">;
   req: number;
+  rawLevel?: string;
   cand: number;
   name: string;
 }
@@ -279,6 +218,7 @@ export interface CategoryComparisonRow {
   category: Exclude<CategoryCode, "OTHER">;
   name: string;
   req: number;
+  rawLevel?: string;
   cand: number;
   status: "met" | "gap" | "exceeds";
   gap: number;
@@ -315,7 +255,8 @@ export function evaluateCandidateAgainstCompany(
   const comparison: CategoryComparisonRow[] = [];
 
   ALL_12_SKILLSET_CODES.forEach((cat) => {
-    const req = company.skill_thresholds[cat] || 6;
+    const req = company.skill_thresholds?.[cat] || 6;
+    const rawLevel = company.skill_levels?.[cat];
     const cand = candidateScores[cat] || 1;
     const meta = RADIX_SKILL_CATEGORIES[cat];
     const name = meta?.name || cat;
@@ -332,6 +273,7 @@ export function evaluateCandidateAgainstCompany(
       gaps.push({
         category: cat,
         req,
+        rawLevel,
         cand,
         gap: gapAmount,
         name,
@@ -341,6 +283,7 @@ export function evaluateCandidateAgainstCompany(
       strengths.push({
         category: cat,
         req,
+        rawLevel,
         cand,
         name
       });
@@ -350,6 +293,7 @@ export function evaluateCandidateAgainstCompany(
       category: cat,
       name,
       req,
+      rawLevel,
       cand,
       status,
       gap: gapAmount,
@@ -366,26 +310,29 @@ export function evaluateCandidateAgainstCompany(
     readinessScore >= 80 ? "Meets Bar" : readinessScore >= 65 ? "Competitive" : "Gaps to Bridge";
 
   // Compute fit for company roles
-  const fitSummaryByRole = company.roles.map((role) => {
+  const roles = company.roles && company.roles.length > 0 ? company.roles : ["Software Engineer", "Backend Developer"];
+  const fitSummaryByRole = roles.map((role) => {
     let roleFit = false;
     let note = "";
 
     const lowerRole = role.toLowerCase();
     if (lowerRole.includes("data scientist") || lowerRole.includes("data analyst")) {
       const dataScore = (candidateScores.SQL + candidateScores.AI + candidateScores.APTI) / 3;
-      roleFit = dataScore >= (company.skill_thresholds.SQL + company.skill_thresholds.AI + company.skill_thresholds.APTI) / 3 - 0.5;
+      const targetReq = ((company.skill_thresholds?.SQL || 6) + (company.skill_thresholds?.AI || 6) + (company.skill_thresholds?.APTI || 6)) / 3;
+      roleFit = dataScore >= targetReq - 0.5;
       note = roleFit
         ? `Strong candidate alignment in SQL (${candidateScores.SQL}/10), AI/ML (${candidateScores.AI}/10), and Quantitative Analytics (${candidateScores.APTI}/10).`
-        : `Requires elevating AI/ML (currently ${candidateScores.AI}/10, bar is ${company.skill_thresholds.AI}/10) and SQL pipelines.`;
-    } else if (lowerRole.includes("software engineer") || lowerRole.includes("swe")) {
+        : `Requires elevating AI/ML (currently ${candidateScores.AI}/10, bar is ${company.skill_thresholds?.AI || 7}/10) and SQL pipelines.`;
+    } else if (lowerRole.includes("software engineer") || lowerRole.includes("sde") || lowerRole.includes("swe") || lowerRole.includes("developer")) {
       const sweScore = (candidateScores.COD + candidateScores.DSA + candidateScores.SWE) / 3;
-      roleFit = sweScore >= (company.skill_thresholds.COD + company.skill_thresholds.DSA + company.skill_thresholds.SWE) / 3 - 0.5;
+      const targetReq = ((company.skill_thresholds?.COD || 6) + (company.skill_thresholds?.DSA || 6) + (company.skill_thresholds?.SWE || 6)) / 3;
+      roleFit = sweScore >= targetReq - 0.5;
       note = roleFit
         ? `Exceeds core SWE thresholds in Coding (${candidateScores.COD}/10) and Algorithmic Problem Solving (${candidateScores.DSA}/10).`
         : `Bridge algorithmic problem solving (${candidateScores.DSA}/10) and system architecture.`;
     } else if (lowerRole.includes("support")) {
       const supportScore = (candidateScores.SQL + candidateScores.COMM + candidateScores.APTI) / 3;
-      roleFit = supportScore >= 7;
+      roleFit = supportScore >= 6.0;
       note = roleFit
         ? `High competence in SQL relational queries (${candidateScores.SQL}/10), incident triage (${candidateScores.APTI}/10), and technical communication (${candidateScores.COMM}/10).`
         : `Focus on database query optimization and enterprise incident communication.`;
@@ -448,4 +395,3 @@ function getTargetedRecommendation(
       return `Review technical documentation and build a reference project demonstrating ${cat} competency.`;
   }
 }
-

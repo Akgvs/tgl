@@ -1,19 +1,17 @@
 import React, { useState, useMemo } from "react";
 import { useProfile } from "../context/ProfileContext";
-import { RADIX_SKILL_CATEGORIES } from "../types/contract";
 import { CategoryBadge } from "../components/CategoryBadge";
 import {
   TALENT_CHECK_COMPANY_SKILLSETS,
+  ALL_COMPANIES_LIST,
   computeCandidateCompetencyScores,
   evaluateCandidateAgainstCompany,
-  CompanySkillsetExpectation,
-  ALL_12_SKILLSET_CODES
+  CompanySkillsetExpectation
 } from "../data/talentCheckCompanySkillsets";
 import {
   Building2,
   Target,
   AlertCircle,
-  CheckCircle2,
   ArrowRight,
   ArrowLeft,
   BarChart2,
@@ -21,7 +19,7 @@ import {
   MapPin,
   Briefcase,
   Sparkles,
-  Info
+  Search
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -35,6 +33,7 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
   const [selectedCompanyKey, setSelectedCompanyKey] = useState<string>("google");
   const [isRunningCheck, setIsRunningCheck] = useState<boolean>(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [searchFilter, setSearchFilter] = useState<string>("");
 
   const companies = TALENT_CHECK_COMPANY_SKILLSETS.companies;
   const currentCompany: CompanySkillsetExpectation =
@@ -49,6 +48,17 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
   const evaluation = useMemo(() => {
     return evaluateCandidateAgainstCompany(candidateScores, currentCompany);
   }, [candidateScores, currentCompany]);
+
+  const filteredCompanyList = useMemo(() => {
+    if (!searchFilter.trim()) return ALL_COMPANIES_LIST;
+    const q = searchFilter.toLowerCase();
+    return ALL_COMPANIES_LIST.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.company_id.toLowerCase().includes(q) ||
+        (c.id && c.id.toString().includes(q))
+    );
+  }, [searchFilter]);
 
   const handleRunCheck = () => {
     setIsRunningCheck(true);
@@ -71,10 +81,12 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
               <span>12-Skillset Benchmark Engine</span>
             </span>
             <span className="text-xs text-slate-400">•</span>
-            <span className="text-xs text-slate-500 font-mono">talent_check_company_skillsets.json</span>
+            <span className="text-xs text-slate-500 font-mono">
+              talent_check_company_skillsets.json ({ALL_COMPANIES_LIST.length} companies)
+            </span>
           </div>
           <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Company Benchmarks
+            Company Benchmarks & Talent Check
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-2xl">
             Evaluate candidate proficiency levels (1–10) across all 12 competency skillsets against verified company hiring expectations.
@@ -101,14 +113,22 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
 
       {/* Target Company Selector */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col gap-4">
           <div>
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-              Select Company to Evaluate:
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Hackathon Scope Targets:
+              </label>
+              <span className="text-[11px] text-slate-400 font-mono">
+                {ALL_COMPANIES_LIST.length} Company Records Available
+              </span>
+            </div>
             <div className="flex flex-wrap gap-2">
-              {Object.keys(companies).map((key) => {
-                const comp = companies[key];
+              {[
+                { key: "google", label: "Google LLC", id: 4 },
+                { key: "microsoft", label: "Microsoft Corporation", id: 78 },
+                { key: "oracle", label: "Oracle Financial Services", id: 24 }
+              ].map(({ key, label, id }) => {
                 const isSelected = selectedCompanyKey === key;
                 return (
                   <button
@@ -118,27 +138,61 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                       setSelectedCompanyKey(key);
                       setExpandedCategory(null);
                     }}
-                    className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
                       isSelected
                         ? "bg-slate-900 text-white border-slate-900 shadow-xs"
                         : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                     }`}
                   >
-                    <span>{comp.name}</span>
+                    <span>{label}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${isSelected ? "bg-slate-800 text-slate-300" : "bg-slate-200/70 text-slate-500"}`}>
+                      #{id}
+                    </span>
                   </button>
                 );
               })}
             </div>
           </div>
 
-          <button
-            onClick={handleRunCheck}
-            disabled={isRunningCheck}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 shrink-0"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${isRunningCheck ? "animate-spin" : ""}`} />
-            <span>{isRunningCheck ? "Evaluating 12 Skillsets..." : "Run Benchmark"}</span>
-          </button>
+          {/* Searchable dropdown across all companies from dataset */}
+          <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="flex-1 flex items-center gap-2">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Filter 116 companies (e.g. Apple, Amazon, Swiggy)..."
+                  value={searchFilter}
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                />
+              </div>
+
+              <select
+                value={selectedCompanyKey}
+                onChange={(e) => {
+                  setSelectedCompanyKey(e.target.value);
+                  setExpandedCategory(null);
+                }}
+                className="py-1.5 px-3 text-xs rounded-xl border border-slate-200 bg-white font-medium text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-xs max-w-xs"
+              >
+                {filteredCompanyList.map((c) => (
+                  <option key={c.company_id} value={c.company_id}>
+                    {c.id ? `[#${c.id}] ` : ""}{c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={handleRunCheck}
+              disabled={isRunningCheck}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 shrink-0"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isRunningCheck ? "animate-spin" : ""}`} />
+              <span>{isRunningCheck ? "Evaluating 12 Skillsets..." : "Run Benchmark"}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -152,7 +206,9 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                 <Building2 className="h-4 w-4 text-blue-600" />
                 <span>Target Standard</span>
               </span>
-              <span className="text-[10px] font-mono text-slate-400">12 SKILLSETS</span>
+              <span className="text-[10px] font-mono text-slate-400">
+                {currentCompany.id ? `RECORD #${currentCompany.id}` : "12 SKILLSETS"}
+              </span>
             </div>
             <h3 className="font-heading text-lg font-bold text-slate-900">{currentCompany.name}</h3>
             <p className="text-xs text-slate-600 mt-2 leading-relaxed">{currentCompany.description}</p>
@@ -164,7 +220,7 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                 Roles in Scope:
               </span>
               <div className="flex flex-wrap gap-1">
-                {currentCompany.roles.map((r) => (
+                {(currentCompany.roles || ["Software Engineer"]).map((r) => (
                   <span key={r} className="rounded-md bg-blue-50 text-blue-700 px-2 py-0.5 text-[10px] font-medium border border-blue-100">
                     {r}
                   </span>
@@ -253,9 +309,16 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                     <CategoryBadge code={g.category} size="sm" />
                     <span className="font-medium text-slate-700 truncate">{g.name}</span>
                   </div>
-                  <span className="font-mono text-[11px] font-bold text-rose-600 shrink-0 ml-2">
-                    L{g.cand} (Bar: {g.req})
-                  </span>
+                  <div className="flex items-center gap-1 shrink-0 ml-2 font-mono text-[11px]">
+                    {g.rawLevel && (
+                      <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
+                        {g.rawLevel}
+                      </span>
+                    )}
+                    <span className="font-bold text-rose-600">
+                      L{g.cand} (Bar: {g.req})
+                    </span>
+                  </div>
                 </div>
               ))}
 
@@ -344,8 +407,13 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                     <CategoryBadge code={row.category} size="sm" />
                     <span className="font-semibold text-slate-800">{row.name}</span>
                   </div>
-                  <div className="flex items-center gap-2 font-mono text-[11px]">
+                  <div className="flex items-center gap-1.5 font-mono text-[11px]">
                     <span className="text-slate-500">Bar: {row.req}/10</span>
+                    {row.rawLevel && (
+                      <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 text-[10px] font-bold">
+                        {row.rawLevel}
+                      </span>
+                    )}
                     <span className="text-slate-300">•</span>
                     <span
                       className={`font-bold ${
@@ -368,7 +436,7 @@ export const Page4TalentCheck: React.FC<Page4TalentCheckProps> = ({ onNext, onBa
                   <div
                     className="absolute top-0 bottom-0 w-1 bg-slate-900 z-10"
                     style={{ left: `${(row.req / 10) * 100}%` }}
-                    title={`Required bar: ${row.req}/10`}
+                    title={`Required bar: ${row.req}/10 (${row.rawLevel || ""})`}
                   />
                 </div>
 

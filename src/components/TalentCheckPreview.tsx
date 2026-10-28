@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from "react";
 import { useProfile } from "../context/ProfileContext";
-import { RADIX_SKILL_CATEGORIES } from "../types/contract";
 import { CategoryBadge } from "./CategoryBadge";
 import {
   TALENT_CHECK_COMPANY_SKILLSETS,
+  ALL_COMPANIES_LIST,
   computeCandidateCompetencyScores,
   evaluateCandidateAgainstCompany,
   CompanySkillsetExpectation
@@ -12,8 +12,7 @@ import {
   Building2,
   AlertCircle,
   Target,
-  BarChart2,
-  MapPin
+  BarChart2
 } from "lucide-react";
 
 export const TalentCheckPreview: React.FC = () => {
@@ -41,7 +40,7 @@ export const TalentCheckPreview: React.FC = () => {
               Hiring Bar Benchmark Simulation
             </h2>
             <span className="rounded-full bg-cyan-100 text-cyan-800 text-[10px] font-bold px-2 py-0.5 border border-cyan-200">
-              Benchmark Preview
+              {ALL_COMPANIES_LIST.length} Company Skillsets
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -50,24 +49,41 @@ export const TalentCheckPreview: React.FC = () => {
         </div>
 
         {/* Company Switcher */}
-        <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200 self-start sm:self-auto">
-          {Object.keys(companies).map((key) => {
-            const comp = companies[key];
-            const isSelected = selectedCompanyKey === key;
-            return (
-              <button
-                key={key}
-                onClick={() => setSelectedCompanyKey(key)}
-                className={`px-3 py-1.5 text-xs rounded-lg font-medium transition-all ${
-                  isSelected
-                    ? "bg-white text-blue-700 font-bold shadow-xs border border-slate-200"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                {comp.name.split(" ")[0]}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            {[
+              { key: "google", label: "Google" },
+              { key: "microsoft", label: "Microsoft" },
+              { key: "oracle", label: "Oracle" }
+            ].map(({ key, label }) => {
+              const isSelected = selectedCompanyKey === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setSelectedCompanyKey(key)}
+                  className={`px-3 py-1.5 text-xs rounded-lg font-medium transition-all ${
+                    isSelected
+                      ? "bg-white text-blue-700 font-bold shadow-xs border border-slate-200"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
+          <select
+            value={selectedCompanyKey}
+            onChange={(e) => setSelectedCompanyKey(e.target.value)}
+            className="text-xs font-semibold rounded-xl border border-slate-200 bg-white py-1.5 px-3 text-slate-700 shadow-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+          >
+            {ALL_COMPANIES_LIST.map((c) => (
+              <option key={c.company_id} value={c.company_id}>
+                {c.id ? `[#${c.id}] ` : ""}{c.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -75,9 +91,16 @@ export const TalentCheckPreview: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-              <Building2 className="h-4 w-4 text-blue-600" />
-              <span>Target Company Bar</span>
+            <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+              <span className="flex items-center gap-1.5">
+                <Building2 className="h-4 w-4 text-blue-600" />
+                <span>Target Company Bar</span>
+              </span>
+              {company.id && (
+                <span className="text-[10px] font-mono text-slate-400">
+                  RECORD #{company.id}
+                </span>
+              )}
             </div>
             <h3 className="font-heading text-lg font-bold text-slate-900">{company.name}</h3>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed">{company.description}</p>
@@ -86,7 +109,7 @@ export const TalentCheckPreview: React.FC = () => {
           <div className="mt-4 pt-3 border-t border-slate-100">
             <span className="text-[11px] font-semibold text-slate-500 block mb-1">In-Scope Roles:</span>
             <div className="flex flex-wrap gap-1">
-              {company.roles.map((r) => (
+              {(company.roles || ["Software Engineer"]).map((r) => (
                 <span key={r} className="rounded-md bg-blue-50 text-blue-700 px-2 py-0.5 text-[10px] font-medium border border-blue-100">
                   {r}
                 </span>
@@ -161,9 +184,16 @@ export const TalentCheckPreview: React.FC = () => {
                     <CategoryBadge code={g.category} size="sm" />
                     <span className="font-medium text-slate-700 truncate">{g.name}</span>
                   </div>
-                  <span className="font-mono text-[11px] font-semibold text-rose-600 shrink-0 ml-2">
-                    {g.cand}/10 (Req: {g.req})
-                  </span>
+                  <div className="flex items-center gap-1 shrink-0 ml-2 font-mono text-[11px]">
+                    {g.rawLevel && (
+                      <span className="px-1 py-0.2 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
+                        {g.rawLevel}
+                      </span>
+                    )}
+                    <span className="font-semibold text-rose-600">
+                      {g.cand}/10 (Req: {g.req})
+                    </span>
+                  </div>
                 </div>
               ))}
 
@@ -198,8 +228,13 @@ export const TalentCheckPreview: React.FC = () => {
                     <CategoryBadge code={row.category} size="sm" />
                     <span className="font-semibold text-slate-800">{row.name}</span>
                   </div>
-                  <div className="flex items-center gap-2 font-mono text-[11px]">
+                  <div className="flex items-center gap-1.5 font-mono text-[11px]">
                     <span className="text-slate-500">Req: {row.req}</span>
+                    {row.rawLevel && (
+                      <span className="px-1 py-0.2 rounded bg-slate-200 text-slate-700 text-[10px] font-bold">
+                        {row.rawLevel}
+                      </span>
+                    )}
                     <span className="text-slate-300">|</span>
                     <span className={`font-bold ${hasGap ? "text-rose-600" : "text-emerald-600"}`}>
                       Cand: {row.cand} {hasGap ? "(Gap)" : "✓"}
@@ -217,7 +252,7 @@ export const TalentCheckPreview: React.FC = () => {
                   <div
                     className="absolute top-0 bottom-0 w-1 bg-slate-900 z-10"
                     style={{ left: `${(row.req / 10) * 100}%` }}
-                    title={`Required level: ${row.req}/10`}
+                    title={`Required level: ${row.req}/10 (${row.rawLevel || ""})`}
                   />
                 </div>
               </div>
