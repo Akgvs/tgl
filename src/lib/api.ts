@@ -1,6 +1,9 @@
 import { CandidateProfile, ExtractedSkillListInput } from "../types/contract";
 import { SAMPLE_CANDIDATES } from "../data/sampleCandidates";
-import { TALENT_CHECK_COMPANY_SKILLSETS, TalentCheckCompanyDataset } from "../data/talentCheckCompanySkillsets";
+import {
+  parseCompanySkillsetDataset,
+  TalentCheckCompanyDataset,
+} from "../data/talentCheckCompanySkillsets";
 
 const API_BASE = "http://127.0.0.1:8000/api";
 
@@ -152,14 +155,15 @@ export async function extractSkillsFromResumeFile(
 }
 
 export async function fetchCompanySkillsets(): Promise<TalentCheckCompanyDataset> {
-  try {
-    const res = await fetch(`${API_BASE}/talent-check-bars`, { signal: AbortSignal.timeout(2000) });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.companies) {
-        return data;
-      }
-    }
-  } catch {}
-  return TALENT_CHECK_COMPANY_SKILLSETS;
+  const res = await fetch(`${API_BASE}/talent-check-bars`, { signal: AbortSignal.timeout(5000) });
+  if (!res.ok) {
+    let detail = `${res.status} ${res.statusText}`;
+    try {
+      const body = await res.json();
+      if (body?.detail) detail = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail);
+    } catch {}
+    throw new Error(`Could not load company benchmarks: ${detail}`);
+  }
+
+  return parseCompanySkillsetDataset(await res.json());
 }

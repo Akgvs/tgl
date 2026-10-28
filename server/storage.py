@@ -6,7 +6,7 @@ and seed profiles for the 4 hackathon benchmark candidates.
 
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 from .models import CandidateProfile, ExtractedSkillListInput
 

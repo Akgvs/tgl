@@ -1,5 +1,4 @@
 import { CategoryCode, CandidateProfile, RADIX_SKILL_CATEGORIES } from "../types/contract";
-import rawDataset from "../../data/talent_check_company_skillsets.json";
 
 /**
  * RADIX Hackathon — Talent Check Company Skillset Expectations
@@ -24,25 +23,12 @@ export interface CompanySkillsetExpectation {
 export interface TalentCheckCompanyDataset {
   source?: string;
   total_companies?: number;
-  companies: {
+  companies: Record<string, CompanySkillsetExpectation> & {
     google: CompanySkillsetExpectation;
     microsoft: CompanySkillsetExpectation;
     oracle: CompanySkillsetExpectation;
-    [key: string]: CompanySkillsetExpectation;
   };
 }
-
-/**
- * Canonical 12-skillset expectation dataset matching talent_check_company_skillsets.json
- */
-export const TALENT_CHECK_COMPANY_SKILLSETS: TalentCheckCompanyDataset = rawDataset as TalentCheckCompanyDataset;
-
-/**
- * List of all 116 companies available in the dataset
- */
-export const ALL_COMPANIES_LIST: CompanySkillsetExpectation[] = Object.values(
-  TALENT_CHECK_COMPANY_SKILLSETS.companies
-);
 
 export const ALL_12_SKILLSET_CODES: Array<Exclude<CategoryCode, "OTHER">> = [
   "COD",
@@ -59,141 +45,243 @@ export const ALL_12_SKILLSET_CODES: Array<Exclude<CategoryCode, "OTHER">> = [
   "OS"
 ];
 
+export function parseCompanySkillsetDataset(value: unknown): TalentCheckCompanyDataset {
+  if (!value || typeof value !== "object") {
+    throw new Error("Benchmark service returned an invalid dataset.");
+  }
+
+  const dataset = value as Partial<TalentCheckCompanyDataset>;
+  const companies = dataset.companies;
+  if (!companies || typeof companies !== "object" || Array.isArray(companies)) {
+    throw new Error("Benchmark dataset is missing its company records.");
+  }
+
+  const companyEntries = Object.entries(companies);
+  if (companyEntries.length === 0) {
+    throw new Error("Benchmark dataset contains no company records.");
+  }
+
+  if (dataset.source !== undefined && typeof dataset.source !== "string") {
+    throw new Error("Benchmark dataset has an invalid source label.");
+  }
+
+  if (
+    dataset.total_companies !== undefined &&
+    (!Number.isInteger(dataset.total_companies) || dataset.total_companies < 0)
+  ) {
+    throw new Error("Benchmark dataset has an invalid company count.");
+  }
+
+  if (dataset.total_companies !== undefined && dataset.total_companies !== companyEntries.length) {
+    throw new Error(
+      `Benchmark dataset declares ${dataset.total_companies} companies but contains ${companyEntries.length}.`
+    );
+  }
+
+  for (const requiredKey of ["google", "microsoft", "oracle"]) {
+    if (!(requiredKey in companies)) {
+      throw new Error(`Benchmark dataset is missing the required ${requiredKey} company record.`);
+    }
+  }
+
+  for (const [key, company] of companyEntries) {
+    if (!company || typeof company !== "object") {
+      throw new Error(`Benchmark record '${key}' is invalid.`);
+    }
+    if (
+      typeof company.company_id !== "string" ||
+      company.company_id !== key ||
+      typeof company.name !== "string" ||
+      !company.name.trim() ||
+      (company.id !== undefined && (!Number.isInteger(company.id) || company.id < 0)) ||
+      typeof company.description !== "string" ||
+      !Array.isArray(company.roles) ||
+      company.roles.some((role) => typeof role !== "string") ||
+      !Array.isArray(company.locations) ||
+      company.locations.some((location) => typeof location !== "string")
+    ) {
+      throw new Error(`Benchmark record '${key}' has invalid company metadata.`);
+    }
+
+    const thresholds = company.skill_thresholds;
+    if (!thresholds || typeof thresholds !== "object") {
+      throw new Error(`Benchmark record '${company.name}' is missing skill thresholds.`);
+    }
+
+    for (const category of ALL_12_SKILLSET_CODES) {
+      const threshold = thresholds[category];
+      if (typeof threshold !== "number" || !Number.isFinite(threshold) || threshold < 1 || threshold > 10) {
+        throw new Error(
+          `Benchmark record '${company.name}' has an invalid ${category} threshold; expected a number from 1 to 10.`
+        );
+      }
+    }
+
+    if (company.skill_levels !== undefined) {
+      if (!company.skill_levels || typeof company.skill_levels !== "object" || Array.isArray(company.skill_levels)) {
+        throw new Error(`Benchmark record '${company.name}' has invalid source level labels.`);
+      }
+      for (const category of ALL_12_SKILLSET_CODES) {
+        const label = company.skill_levels[category];
+        if (label !== undefined && typeof label !== "string") {
+          throw new Error(`Benchmark record '${company.name}' has an invalid ${category} source level label.`);
+        }
+      }
+    }
+  }
+
+  return dataset as TalentCheckCompanyDataset;
+}
+
+export function listCompanies(dataset: TalentCheckCompanyDataset): CompanySkillsetExpectation[] {
+  return Object.values(dataset.companies);
+}
+
+type SkillCategory = Exclude<CategoryCode, "OTHER">;
+
+export interface CompetencyEvidence {
+  source: "Profile skill" | "Hackathon" | "Internship" | "Certification";
+  title: string;
+  details: string;
+  points: number;
+  confidence?: "high" | "medium" | "low";
+}
+
+export interface CompetencyAssessment {
+  score: number;
+  evidence: CompetencyEvidence[];
+}
+
+const CATEGORY_EVIDENCE_PATTERNS: Record<SkillCategory, RegExp[]> = {
+  COD: [/\b(c\+\+|c#|java|python|golang|go|rust|javascript|typescript|kotlin|swift|ruby|php)\b/i],
+  DSA: [/\b(data structures?|algorithms?|leetcode|graph traversal|dynamic programming|complexity analysis)\b/i],
+  OOD: [/\b(object[- ]oriented|solid|design patterns|modular design|class architecture)\b/i],
+  APTI: [/\b(aptitude|quantitative|logical reasoning|probability|statistics|hypothesis testing|a\/b testing)\b/i],
+  COMM: [/\b(communication|presentation|stakeholder|technical writing|documentation|tableau|streamlit)\b/i],
+  AI: [/\b(machine learning|deep learning|artificial intelligence|ai\/ml|xgboost|pytorch|tensorflow|llm|nlp)\b/i],
+  CLOUD: [/\b(cloud|aws|azure|gcp|docker|kubernetes|bigquery|ci\/cd|terraform)\b/i],
+  SQL: [/\b(sql|postgres(?:ql)?|mysql|snowflake|database|bigquery|oracle sql)\b/i],
+  SWE: [/\b(software engineering|testing|unit tests?|integration tests?|git|github actions|code review|sdlc|fastapi|react)\b/i],
+  SYSD: [/\b(system design|distributed systems?|microservices|raft|paxos|kafka|redis|caching|scalability)\b/i],
+  NETW: [/\b(network(?:ing)?|tcp\/ip|grpc|http|rest api|websocket|socket|load balanc(?:er|ing))\b/i],
+  OS: [/\b(operating systems?|linux|kernel|concurrency|threads?|epoll|posix|linux perf)\b/i],
+};
+
+const EXPERIENCE_POINTS = 1;
+const CERTIFICATION_POINTS = 0.5;
+
+function categoriesInText(text: string): SkillCategory[] {
+  return ALL_12_SKILLSET_CODES.filter((category) =>
+    CATEGORY_EVIDENCE_PATTERNS[category].some((pattern) => pattern.test(text))
+  );
+}
+
+function matchedTerms(text: string, category: SkillCategory): string[] {
+  return Array.from(new Set(
+    CATEGORY_EVIDENCE_PATTERNS[category]
+      .flatMap((pattern) => text.match(pattern) ?? [])
+      .map((term) => term.trim())
+      .filter(Boolean)
+  ));
+}
+
 /**
- * Evaluates candidate competency level (1-10 scale) across all 12 skillsets
- * based on verified skills, confidence, evidence depth, hackathons, internships, and certifications.
+ * Builds transparent 1-10 estimates from profile evidence. Categories with no
+ * supporting evidence stay at level 1; each contributing signal is returned
+ * so the UI can show exactly what affected the estimate.
  */
-export function computeCandidateCompetencyScores(
+export function computeCandidateCompetencyAssessments(
   profile: CandidateProfile
-): Record<Exclude<CategoryCode, "OTHER">, number> {
-  const scores: Record<Exclude<CategoryCode, "OTHER">, number> = {
-    COD: 2,
-    DSA: 2,
-    OOD: 2,
-    APTI: 2,
-    COMM: 2,
-    AI: 1,
-    CLOUD: 1,
-    SQL: 2,
-    SWE: 2,
-    SYSD: 1,
-    NETW: 1,
-    OS: 1
+): Record<SkillCategory, CompetencyAssessment> {
+  const assessments = {} as Record<SkillCategory, CompetencyAssessment>;
+  ALL_12_SKILLSET_CODES.forEach((category) => {
+    assessments[category] = { score: 1, evidence: [] };
+  });
+
+  const addEvidence = (category: SkillCategory, item: CompetencyEvidence) => {
+    assessments[category].evidence.push(item);
   };
 
-  // 1. Process verified skills
   (profile.skills || []).forEach((skill) => {
-    const cat = skill.category_code as Exclude<CategoryCode, "OTHER">;
-    if (!scores[cat]) {
-      if (cat in scores) {
-        scores[cat] = 2;
-      } else {
-        return;
-      }
-    }
+    const details = skill.evidence?.trim();
+    if (!details || skill.category_code === "OTHER") return;
 
-    let points = 0;
-    if (skill.confidence === "high") {
-      points += 3.2;
-    } else if (skill.confidence === "medium") {
-      points += 2.0;
-    } else {
-      points += 1.0;
-    }
-
-    // Evidence depth multiplier
-    const ev = (skill.evidence || "").toLowerCase();
-    if (
-      ev.includes("450+") ||
-      ev.includes("from scratch") ||
-      ev.includes("99th percentile") ||
-      ev.includes("lead") ||
-      ev.includes("architect") ||
-      ev.includes("production") ||
-      ev.includes("100m+") ||
-      ev.includes("allocator") ||
-      ev.includes("kernel")
-    ) {
-      points += 1.2;
-    } else if (ev.length > 50) {
-      points += 0.6;
-    }
-
-    scores[cat] += points;
-  });
-
-  // 2. Beyond-Resume Boosts: Hackathons
-  (profile.hackathons || []).forEach((h) => {
-    scores.SWE += 0.8;
-    scores.APTI += 0.6;
-    scores.COMM += 0.4;
-
-    (h.skills_used || []).forEach((skillName) => {
-      const lower = skillName.toLowerCase();
-      if (lower.includes("raft") || lower.includes("distributed") || lower.includes("system")) {
-        scores.SYSD += 1.2;
-      }
-      if (lower.includes("c++") || lower.includes("go") || lower.includes("python") || lower.includes("java")) {
-        scores.COD += 0.8;
-      }
-      if (lower.includes("grpc") || lower.includes("network") || lower.includes("socket")) {
-        scores.NETW += 1.0;
-      }
-      if (lower.includes("docker") || lower.includes("cloud") || lower.includes("aws")) {
-        scores.CLOUD += 0.8;
-      }
-      if (lower.includes("sql") || lower.includes("postgres")) {
-        scores.SQL += 0.8;
-      }
-      if (lower.includes("ai") || lower.includes("ml") || lower.includes("torch")) {
-        scores.AI += 1.0;
-      }
+    const points = skill.confidence === "high" ? 3.2 : skill.confidence === "medium" ? 2 : 1;
+    addEvidence(skill.category_code, {
+      source: "Profile skill",
+      title: skill.skill_name,
+      details,
+      points,
+      confidence: skill.confidence,
     });
-
-    if (h.achievement && (h.achievement.includes("1st") || h.achievement.includes("Winner") || h.achievement.includes("Top"))) {
-      scores.SWE += 0.5;
-      scores.APTI += 0.5;
-    }
   });
 
-  // 3. Beyond-Resume Boosts: Internships
-  (profile.internships || []).forEach((intern) => {
-    scores.SWE += 1.0;
-    scores.COMM += 1.0;
-
-    const desc = (intern.description || "").toLowerCase();
-    if (desc.includes("latency") || desc.includes("scale") || desc.includes("throughput")) {
-      scores.SYSD += 0.8;
-    }
-    if (desc.includes("sql") || desc.includes("database") || desc.includes("query")) {
-      scores.SQL += 0.8;
-    }
-    if (desc.includes("perf") || desc.includes("linux") || desc.includes("concurrency")) {
-      scores.OS += 1.0;
-    }
+  (profile.hackathons || []).forEach((hackathon) => {
+    const listedSkills = (hackathon.skills_used || []).filter(Boolean);
+    const skillText = listedSkills.join(", ");
+    categoriesInText(skillText).forEach((category) => {
+      addEvidence(category, {
+        source: "Hackathon",
+        title: hackathon.title,
+        details: `Skills used: ${listedSkills.filter((skill) => categoriesInText(skill).includes(category)).join(", ")}`,
+        points: EXPERIENCE_POINTS,
+      });
+    });
   });
 
-  // 4. Beyond-Resume Boosts: Certifications
-  (profile.certifications || []).forEach((c) => {
-    const certLower = (c.name || "").toLowerCase();
-    if (certLower.includes("aws") || certLower.includes("cloud") || certLower.includes("azure")) {
-      scores.CLOUD += 1.2;
-    }
-    if (certLower.includes("oracle") || certLower.includes("sql") || certLower.includes("database")) {
-      scores.SQL += 1.2;
-    }
-    if (certLower.includes("ai") || certLower.includes("deep learning") || certLower.includes("machine learning")) {
-      scores.AI += 1.2;
-    }
+  (profile.internships || []).forEach((internship) => {
+    const listedSkills = (internship.skills_used || []).filter(Boolean);
+    const skillText = listedSkills.join(", ");
+    const description = internship.description?.trim() || "";
+    const categories = new Set([
+      ...categoriesInText(skillText),
+      ...categoriesInText(description),
+    ]);
+
+    categories.forEach((category) => {
+      const evidenceTerms = [
+        ...listedSkills.filter((skill) => categoriesInText(skill).includes(category)),
+        ...matchedTerms(description, category),
+      ];
+      addEvidence(category, {
+        source: "Internship",
+        title: `${internship.role} at ${internship.company}`,
+        details: evidenceTerms.length > 0
+          ? `Profile lists: ${Array.from(new Set(evidenceTerms)).join(", ")}`
+          : description,
+        points: EXPERIENCE_POINTS,
+      });
+    });
   });
 
-  // Normalize and clamp between 1 and 10
-  const finalized: Record<Exclude<CategoryCode, "OTHER">, number> = {} as any;
-  ALL_12_SKILLSET_CODES.forEach((cat) => {
-    finalized[cat] = Math.min(10, Math.max(1, Math.round(scores[cat])));
+  (profile.certifications || []).forEach((certification) => {
+    categoriesInText(certification.name).forEach((category) => {
+      addEvidence(category, {
+        source: "Certification",
+        title: certification.name,
+        details: certification.issuer ? `Issued by ${certification.issuer}` : certification.name,
+        points: CERTIFICATION_POINTS,
+      });
+    });
   });
 
-  return finalized;
+  ALL_12_SKILLSET_CODES.forEach((category) => {
+    const points = assessments[category].evidence.reduce((total, item) => total + item.points, 0);
+    assessments[category].score = Math.min(10, Math.round(1 + points));
+  });
+
+  return assessments;
+}
+
+/** Keeps the existing score-only API available to other screens. */
+export function computeCandidateCompetencyScores(
+  profile: CandidateProfile
+): Record<SkillCategory, number> {
+  const assessments = computeCandidateCompetencyAssessments(profile);
+  return ALL_12_SKILLSET_CODES.reduce((scores, category) => {
+    scores[category] = assessments[category].score;
+    return scores;
+  }, {} as Record<SkillCategory, number>);
 }
 
 export interface SkillGapItem {
@@ -223,6 +311,7 @@ export interface CategoryComparisonRow {
   status: "met" | "gap" | "exceeds";
   gap: number;
   recommendation: string;
+  evidence: CompetencyEvidence[];
 }
 
 export interface TalentCheckEvaluationResult {
@@ -245,7 +334,14 @@ export interface TalentCheckEvaluationResult {
  */
 export function evaluateCandidateAgainstCompany(
   candidateScores: Record<Exclude<CategoryCode, "OTHER">, number>,
-  company: CompanySkillsetExpectation
+  company: CompanySkillsetExpectation,
+  candidateEvidence: Record<SkillCategory, CompetencyEvidence[]> = ALL_12_SKILLSET_CODES.reduce(
+    (evidence, category) => {
+      evidence[category] = [];
+      return evidence;
+    },
+    {} as Record<SkillCategory, CompetencyEvidence[]>
+  )
 ): TalentCheckEvaluationResult {
   let totalRequired = 0;
   let totalMet = 0;
@@ -255,7 +351,7 @@ export function evaluateCandidateAgainstCompany(
   const comparison: CategoryComparisonRow[] = [];
 
   ALL_12_SKILLSET_CODES.forEach((cat) => {
-    const req = company.skill_thresholds?.[cat] || 6;
+    const req = company.skill_thresholds[cat];
     const rawLevel = company.skill_levels?.[cat];
     const cand = candidateScores[cat] || 1;
     const meta = RADIX_SKILL_CATEGORIES[cat];
@@ -297,7 +393,8 @@ export function evaluateCandidateAgainstCompany(
       cand,
       status,
       gap: gapAmount,
-      recommendation
+      recommendation,
+      evidence: candidateEvidence[cat]
     });
   });
 
@@ -318,14 +415,14 @@ export function evaluateCandidateAgainstCompany(
     const lowerRole = role.toLowerCase();
     if (lowerRole.includes("data scientist") || lowerRole.includes("data analyst")) {
       const dataScore = (candidateScores.SQL + candidateScores.AI + candidateScores.APTI) / 3;
-      const targetReq = ((company.skill_thresholds?.SQL || 6) + (company.skill_thresholds?.AI || 6) + (company.skill_thresholds?.APTI || 6)) / 3;
+      const targetReq = (company.skill_thresholds.SQL + company.skill_thresholds.AI + company.skill_thresholds.APTI) / 3;
       roleFit = dataScore >= targetReq - 0.5;
       note = roleFit
         ? `Strong candidate alignment in SQL (${candidateScores.SQL}/10), AI/ML (${candidateScores.AI}/10), and Quantitative Analytics (${candidateScores.APTI}/10).`
-        : `Requires elevating AI/ML (currently ${candidateScores.AI}/10, bar is ${company.skill_thresholds?.AI || 7}/10) and SQL pipelines.`;
+        : `Requires elevating AI/ML (currently ${candidateScores.AI}/10, bar is ${company.skill_thresholds.AI}/10) and SQL pipelines.`;
     } else if (lowerRole.includes("software engineer") || lowerRole.includes("sde") || lowerRole.includes("swe") || lowerRole.includes("developer")) {
       const sweScore = (candidateScores.COD + candidateScores.DSA + candidateScores.SWE) / 3;
-      const targetReq = ((company.skill_thresholds?.COD || 6) + (company.skill_thresholds?.DSA || 6) + (company.skill_thresholds?.SWE || 6)) / 3;
+      const targetReq = (company.skill_thresholds.COD + company.skill_thresholds.DSA + company.skill_thresholds.SWE) / 3;
       roleFit = sweScore >= targetReq - 0.5;
       note = roleFit
         ? `Exceeds core SWE thresholds in Coding (${candidateScores.COD}/10) and Algorithmic Problem Solving (${candidateScores.DSA}/10).`
