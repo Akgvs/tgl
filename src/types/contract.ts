@@ -20,6 +20,7 @@ export type CategoryCode =
   | "OTHER";
 
 export type ConfidenceLevel = "high" | "medium" | "low";
+export type SkillEvidenceSource = "hackathon" | "internship" | "certification" | "achievement";
 
 export interface Skill {
   id?: string;
@@ -27,6 +28,7 @@ export interface Skill {
   category_code: CategoryCode;
   evidence: string;
   confidence: ConfidenceLevel;
+  source?: SkillEvidenceSource;
 }
 
 export interface HackathonEntry {
@@ -56,6 +58,13 @@ export interface CertificationEntry {
   credential_id_or_url?: string;
 }
 
+export interface AchievementEntry {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+}
+
 /**
  * Role 3 Candidate Profile (Handoff to Role 4 Talent Check & Role 5 Skill Matching)
  */
@@ -76,6 +85,7 @@ export interface CandidateProfile {
   hackathons: HackathonEntry[];
   internships: InternshipEntry[];
   certifications: CertificationEntry[];
+  achievements?: AchievementEntry[];
   preferred_roles: string[];
   preferred_companies?: string[];
   preferred_mode?: "Remote" | "Hybrid" | "Onsite" | "Flexible";

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useProfile } from "../context/ProfileContext";
-import { HackathonEntry, InternshipEntry, CertificationEntry } from "../types/contract";
+import { AchievementEntry, HackathonEntry, InternshipEntry, CertificationEntry } from "../types/contract";
 import {
   Award,
   Briefcase,
@@ -602,6 +602,121 @@ export const CertificationsSection: React.FC = () => {
             <p className="text-xs text-slate-500 mt-1">
               Add verified industry credentials to substantiate candidate competence.
             </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export const AchievementsSection: React.FC = () => {
+  const { profile, addAchievement, removeAchievement } = useProfile();
+  const [isAdding, setIsAdding] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [date, setDate] = useState("");
+  const achievements = profile.achievements || [];
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+    addAchievement({
+      title: title.trim(),
+      description: description.trim(),
+      date: date.trim(),
+    });
+    setTitle("");
+    setDescription("");
+    setDate("");
+    setIsAdding(false);
+  };
+
+  return (
+    <div className="flex flex-col gap-6 p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="font-heading text-xl font-bold tracking-tight text-slate-900">
+            Achievements & Awards
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Resume accomplishments, honors, and measurable outcomes.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsAdding((current) => !current)}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition-all self-start sm:self-auto"
+        >
+          <Plus className="h-4 w-4" />
+          {isAdding ? "Cancel" : "Add Achievement"}
+        </button>
+      </div>
+
+      {isAdding && (
+        <form onSubmit={handleSubmit} className="rounded-2xl border border-blue-200 bg-blue-50/40 p-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="text-xs font-semibold text-slate-700">
+              Achievement title
+              <input
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-2.5 text-xs"
+              />
+            </label>
+            <label className="text-xs font-semibold text-slate-700">
+              Date or year
+              <input
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-2.5 text-xs"
+              />
+            </label>
+            <label className="text-xs font-semibold text-slate-700 sm:col-span-2">
+              Details
+              <textarea
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-2.5 text-xs"
+              />
+            </label>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <button type="submit" className="rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">
+              Save Achievement
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {achievements.map((achievement: AchievementEntry) => (
+          <article key={achievement.id} className="rounded-2xl border border-slate-200 bg-white p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">{achievement.title}</h3>
+                {achievement.date && <p className="mt-1 text-[11px] text-slate-500">{achievement.date}</p>}
+              </div>
+              <button
+                type="button"
+                onClick={() => removeAchievement(achievement.id)}
+                className="p-1 text-slate-400 hover:text-rose-600"
+                title="Remove achievement"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+            {achievement.description && (
+              <p className="mt-3 whitespace-pre-wrap text-xs leading-relaxed text-slate-600">{achievement.description}</p>
+            )}
+          </article>
+        ))}
+        {achievements.length === 0 && (
+          <div className="col-span-full rounded-2xl border border-dashed border-slate-300 p-8 text-center">
+            <Sparkles className="mx-auto mb-2 h-8 w-8 text-slate-400" />
+            <h3 className="text-sm font-bold text-slate-700">No achievements recorded</h3>
+            <p className="mt-1 text-xs text-slate-500">Resume awards and accomplishments will appear here after extraction.</p>
           </div>
         )}
       </div>

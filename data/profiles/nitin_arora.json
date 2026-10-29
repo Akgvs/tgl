@@ -269,6 +269,168 @@
       "category_code": "AI",
       "evidence": "knowledge-graph techniques",
       "confidence": "high"
+    },
+    {
+      "skill_name": "Vector Databases",
+      "category_code": "AI",
+      "evidence": "AI/ML: Machine Learning, Deep Learning, Computer Vision, NLP, Reinforcement Learning, LLMs, RAG\u2026",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Hugging Face Transformers",
+      "category_code": "AI",
+      "evidence": "Frameworks/Tools: PyTorch, TensorFlow, Scikit-learn, Hugging Face Transformers, NumPy, Pandas, Matplotlib\u2026",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "NumPy",
+      "category_code": "AI",
+      "evidence": "Frameworks/Tools: PyTorch, TensorFlow, Scikit-learn, Hugging Face Transformers, NumPy, Pandas, Matplotlib\u2026",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Pandas",
+      "category_code": "AI",
+      "evidence": "Frameworks/Tools: PyTorch, TensorFlow, Scikit-learn, Hugging Face Transformers, NumPy, Pandas, Matplotlib\u2026",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Matplotlib",
+      "category_code": "AI",
+      "evidence": "Frameworks/Tools: PyTorch, TensorFlow, Scikit-learn, Hugging Face Transformers, NumPy, Pandas, Matplotlib\u2026",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "CatBoost",
+      "category_code": "AI",
+      "evidence": "ML / DL: XGBoost, LightGBM, CatBoost",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Optuna",
+      "category_code": "AI",
+      "evidence": "ML / DL: Optuna, SHAP",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "SHAP",
+      "category_code": "AI",
+      "evidence": "ML / DL: Optuna, SHAP",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "CNNs",
+      "category_code": "AI",
+      "evidence": "Computer Vision (CNNs)",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Q-learning",
+      "category_code": "AI",
+      "evidence": "Reinforcement Learning (Q-learning)",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Retrieval Augmented Generation",
+      "category_code": "AI",
+      "evidence": "Generative & Hybrid AI: LLMs, RAG, Embeddings",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Autonomous Agents",
+      "category_code": "AI",
+      "evidence": "Autonomous Agents (Google ADK)",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "DSL design",
+      "category_code": "OTHER",
+      "evidence": "DSL design & BFS program search (symbolic AI)",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "BFS program search",
+      "category_code": "DSA",
+      "evidence": "DSL design & BFS program search (symbolic AI)",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Data preprocessing",
+      "category_code": "OTHER",
+      "evidence": "data preprocessing & feature engineering",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Git/GitHub",
+      "category_code": "SWE",
+      "evidence": "Git/GitHub",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "React",
+      "category_code": "SWE",
+      "evidence": "React",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "JWT auth",
+      "category_code": "OTHER",
+      "evidence": "JWT auth",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "Blockchain",
+      "category_code": "OTHER",
+      "evidence": "blockchain traceability backend",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "Codeforces competitive programming",
+      "category_code": "DSA",
+      "evidence": "Codeforces Pupil rank (max 1230)",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "Codeforces",
+      "category_code": "DSA",
+      "evidence": "Codeforces Pupil rank (max 1230)",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Computer Vision (CNNs)",
+      "category_code": "AI",
+      "evidence": "ML / DL: ... Computer Vision (CNNs), NLP...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Reinforcement Learning (Q-learning)",
+      "category_code": "AI",
+      "evidence": "ML / DL: ... Reinforcement Learning (Q-learning)",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Autonomous Agents (Google ADK)",
+      "category_code": "AI",
+      "evidence": "Generative & Hybrid AI: ... Autonomous Agents (Google ADK)...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "DSL Design & BFS Program Search (Symbolic AI)",
+      "category_code": "AI",
+      "evidence": "Generative & Hybrid AI: ... DSL design & BFS program search (symbolic AI)",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Data Preprocessing & Feature Engineering",
+      "category_code": "OTHER",
+      "evidence": "Data & Engineering: ... data preprocessing & feature engineering...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Codeforces Pupil Rank",
+      "category_code": "DSA",
+      "evidence": "Achievements: Codeforces Pupil rank (max 1230)",
+      "confidence": "high"
     }
   ],
   "hackathons": [],
@@ -280,7 +442,7 @@
   ],
   "preferred_companies": [],
   "preferred_mode": "Hybrid",
-  "cv_file": "Vansh_Kumar_Tower_Research_AI_ML_Resume.pdf",
-  "cv_uploaded_at": "2026-10-28T21:29:19.705Z",
-  "last_updated": "2026-10-28T21:29:31.241284+00:00"
+  "cv_file": "Vansh_Kumar_Resume_Daice_Labs.pdf",
+  "cv_uploaded_at": "2026-10-29T07:25:43.404Z",
+  "last_updated": "2026-10-29T07:26:48.837861+00:00"
 }

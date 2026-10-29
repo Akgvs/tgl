@@ -8,7 +8,15 @@
  * Python, Java, Docker, Linux, SQL) and maps them cleanly into the 12 RADIX Competency Categories.
  */
 
-import { CategoryCode, Skill, ConfidenceLevel } from "../types/contract";
+import {
+  AchievementEntry,
+  CategoryCode,
+  CertificationEntry,
+  HackathonEntry,
+  InternshipEntry,
+  Skill,
+  ConfidenceLevel,
+} from "../types/contract";
 import type { JdAnalysis } from "../types/jd";
 
 export interface SkillDependencyRule {
@@ -619,9 +627,17 @@ export interface ExtractedResumeResult {
   email: string;
   phone: string;
   education: string;
+  institution?: string;
   cgpa: string;
   graduationYear: string;
+  linkedin?: string;
+  github?: string;
+  portfolio?: string;
   summary: string;
+  internships?: Array<Omit<InternshipEntry, "id">>;
+  hackathons?: Array<Omit<HackathonEntry, "id">>;
+  certifications?: Array<Omit<CertificationEntry, "id">>;
+  achievements?: Array<Omit<AchievementEntry, "id">>;
   explicitSkills: InferredSkillItem[];
   impliedSkills: InferredSkillItem[];
   allSkills: InferredSkillItem[];
@@ -895,12 +911,12 @@ export function extractSkillsAndPrerequisitesFromResume(
     }
   });
 
-  const name = extractRegexMatch(resumeText, /(?:Name|Candidate):\s*([^\n\r]+)/i) || "Candidate";
-  const email = extractRegexMatch(resumeText, /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i) || "candidate@example.com";
-  const phone = extractRegexMatch(resumeText, /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/i) || "+91 98765 43210";
-  const education = extractRegexMatch(resumeText, /(?:Education|Degree):\s*([^\n\r]+)/i) || "B.Tech in Computer Science and Engineering, 2024";
-  const cgpa = extractRegexMatch(resumeText, /(?:CGPA|GPA):\s*([0-9.]+)/i) || "8.5";
-  const graduationYear = extractRegexMatch(resumeText, /(?:Graduation|Year|Batch):\s*(\d{4})/i) || "2024";
+  const name = extractRegexMatch(resumeText, /(?:Name|Candidate):\s*([^\n\r]+)/i) || "";
+  const email = extractRegexMatch(resumeText, /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i) || "";
+  const phone = extractRegexMatch(resumeText, /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/i) || "";
+  const education = extractRegexMatch(resumeText, /(?:Education|Degree):\s*([^\n\r]+)/i) || "";
+  const cgpa = extractRegexMatch(resumeText, /(?:CGPA|GPA):\s*([0-9.]+)/i) || "";
+  const graduationYear = extractRegexMatch(resumeText, /(?:Graduation|Year|Batch):\s*(\d{4})/i) || "";
 
   const rawJsonExport = {
     contract_schema: "RADIX_CANDIDATE_RESUME_EXTRACTION_V1",

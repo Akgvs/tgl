@@ -38,7 +38,7 @@ Every skill is categorized with exactly one `category_code`:
 ### 1. Python Backend (FastAPI on Port 8000)
 ```powershell
 python -m venv .venv
-.venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
+.venv\Scripts\activate          
 pip install -r requirements.txt
 Copy-Item .env.example .env      # macOS/Linux: cp .env.example .env  (then add GROQ_API_KEY)
 python -m uvicorn server.main:app --host 127.0.0.1 --port 8000 --reload
@@ -124,6 +124,19 @@ A successful response looks like:
 {
   "filename": "resume.pdf",
   "skills_extracted": 18,
+  "profile": {
+    "name": "Candidate Name",
+    "email": "candidate@example.com",
+    "phone": null,
+    "education": "B.Sc. Computer Science",
+    "institution": "Example University",
+    "cgpa": null,
+    "graduation_year": "2025",
+    "linkedin": null,
+    "github": "https://github.com/candidate",
+    "portfolio": null,
+    "summary": "Software engineering graduate focused on backend systems."
+  },
   "skills": [
     {
       "skill_name": "React",
@@ -132,16 +145,30 @@ A successful response looks like:
       "confidence": "high",
       "evidence": "Built a real-time dashboard using React and TypeScript"
     }
-  ]
+  ],
+  "experience": [],
+  "hackathons": [],
+  "achievements": [],
+  "certifications": []
 }
 ```
 
+Extracted work history, competitions, achievements, and certifications are
+transferred into their corresponding Profile Builder sections. Missing resume
+details remain empty rather than being filled with guessed values.
+
 **Troubleshooting:**
 - HTTP 503 → `GROQ_API_KEY` is missing or empty — add it to `.env` and restart.
-- HTTP 502 → Groq API returned an error — check your key and network connectivity.
+- HTTP 503 mentioning credentials → Groq rejected `GROQ_API_KEY`; verify the key locally and restart the backend.
+- HTTP 503 mentioning the model → set `GROQ_MODEL` to an available Groq model or remove the override to use the service default, then restart.
+- HTTP 503 mentioning rate limits → wait briefly and retry.
+- HTTP 502 → the extraction model returned invalid output or an upstream error; check the backend terminal for the detailed exception.
+- HTTP 504 → Groq timed out; retry with a smaller resume or try again later.
+- HTTP 422 → the file has no readable text; scanned/image-only PDFs need OCR before upload.
 - HTTP 415 → Unsupported file type — use PDF, DOCX, or TXT only.
 
----
+---o
+
 
 ## 📦 Benchmark Candidates (Page 11 of the Brief)
 

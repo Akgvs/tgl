@@ -5,7 +5,8 @@ import { BasicInfoSection } from "../components/BasicInfoSection";
 import {
   HackathonsSection,
   InternshipsSection,
-  CertificationsSection
+  CertificationsSection,
+  AchievementsSection,
 } from "../components/BeyondResumeSections";
 import {
   ArrowRight,
@@ -15,7 +16,8 @@ import {
   Award,
   Briefcase,
   BadgeCheck,
-  User
+  User,
+  Sparkles,
 } from "lucide-react";
 
 interface Page3ProfileBuilderProps {
@@ -30,7 +32,7 @@ export const Page3ProfileBuilder: React.FC<Page3ProfileBuilderProps> = ({
   onOpenContractModal,
 }) => {
   const { profile, saveProfile, isSaving } = useProfile();
-  const [subTab, setSubTab] = useState<"skills" | "hackathons" | "internships" | "certifications" | "overview">("skills");
+  const [subTab, setSubTab] = useState<"skills" | "hackathons" | "internships" | "certifications" | "achievements" | "overview">("skills");
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -41,7 +43,7 @@ export const Page3ProfileBuilder: React.FC<Page3ProfileBuilderProps> = ({
             Profile Builder
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-slate-500">
-            Fine-tune your verified competencies, hackathons, internships, certifications, and career target preferences.
+            Review extracted resume details, competencies, competitions, achievements, experience, certifications, and career preferences.
           </p>
         </div>
 
@@ -68,9 +70,10 @@ export const Page3ProfileBuilder: React.FC<Page3ProfileBuilderProps> = ({
       <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-200 pb-2 mb-6 scrollbar-none">
         {[
           { id: "skills" as const, label: "Skills", icon: GraduationCap, count: profile.skills.length },
-          { id: "hackathons" as const, label: "Hackathons", icon: Award, count: profile.hackathons.length },
+          { id: "hackathons" as const, label: "Hackathons & Competitions", icon: Award, count: profile.hackathons.length },
           { id: "internships" as const, label: "Experience", icon: Briefcase, count: profile.internships.length },
           { id: "certifications" as const, label: "Certifications", icon: BadgeCheck, count: profile.certifications.length },
+          { id: "achievements" as const, label: "Achievements", icon: Sparkles, count: profile.achievements?.length || 0 },
           { id: "overview" as const, label: "Target Roles & Bio", icon: User, count: undefined },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -105,6 +108,7 @@ export const Page3ProfileBuilder: React.FC<Page3ProfileBuilderProps> = ({
         {subTab === "hackathons" && <HackathonsSection />}
         {subTab === "internships" && <InternshipsSection />}
         {subTab === "certifications" && <CertificationsSection />}
+        {subTab === "achievements" && <AchievementsSection />}
         {subTab === "overview" && <BasicInfoSection />}
       </div>
 
