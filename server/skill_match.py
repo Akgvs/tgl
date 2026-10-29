@@ -53,6 +53,7 @@ class MatchedSkill(BaseModel):
     match_type: MatchType
     note: str
     credit: float
+    source: Optional[str] = None
 
 
 class MissingSkill(BaseModel):
@@ -127,21 +128,32 @@ def match_skills(candidate: List[Skill], jd: List[Skill], source_file: Optional[
         for key in keys:
             if key in by_name:
                 cand = by_name[key]
+                source = cand.source
+                is_profile_skill = source is None
                 return MatchedSkill(req_skill=req.skill_name, category=req.category_code, cand_skill=cand.skill_name,
-                                    evidence=cand.evidence, confidence=cand.confidence, match_type="direct",
-                                    note="Direct match", credit=CREDIT["direct"])
+                                    evidence=cand.evidence, confidence=cand.confidence,
+                                    match_type="direct" if is_profile_skill else "evidence",
+                                    note="Direct match" if is_profile_skill else f"Verified in {source}",
+                                    credit=CREDIT["direct"] if is_profile_skill else CREDIT["evidence"],
+                                    source=source)
         if not keys:
             for cand in candidate:
                 if _similar(req.skill_name, cand.skill_name):
+                    source = cand.source
+                    is_profile_skill = source is None
                     return MatchedSkill(req_skill=req.skill_name, category=req.category_code, cand_skill=cand.skill_name,
-                                        evidence=cand.evidence, confidence=cand.confidence, match_type="direct",
-                                        note="Direct match", credit=CREDIT["direct"])
+                                        evidence=cand.evidence, confidence=cand.confidence,
+                                        match_type="direct" if is_profile_skill else "evidence",
+                                        note="Direct match" if is_profile_skill else f"Verified in {source}",
+                                        credit=CREDIT["direct"] if is_profile_skill else CREDIT["evidence"],
+                                        source=source)
         for key in keys:
             if key in by_evidence:
                 cand = by_evidence[key]
                 return MatchedSkill(req_skill=req.skill_name, category=req.category_code, cand_skill=cand.skill_name,
                                     evidence=cand.evidence, confidence="medium", match_type="evidence",
-                                    note=f"Mentioned in evidence for {cand.skill_name}", credit=CREDIT["evidence"])
+                                    note=f"Mentioned in evidence for {cand.skill_name}", credit=CREDIT["evidence"],
+                                    source=cand.source)
         for key in keys:
             if key in inferred:
                 cand = origin_skill[inferred[key]]
@@ -149,7 +161,7 @@ def match_skills(candidate: List[Skill], jd: List[Skill], source_file: Optional[
                 return MatchedSkill(req_skill=req.skill_name, category=req.category_code, cand_skill=cand.skill_name,
                                     evidence=f"{parent} work implies {TECH_BY_NAME[key].name}: {cand.evidence}",
                                     confidence="medium", match_type="implied", note=f"Inferred via {parent}",
-                                    credit=CREDIT["implied"])
+                                    credit=CREDIT["implied"], source=cand.source)
         broad = not keys or req.category_code in BROAD_CATEGORIES or any(k in BROAD_SKILLS for k in keys)
         if broad:
             related = [c for c in candidate if c.category_code == req.category_code]
@@ -157,7 +169,8 @@ def match_skills(candidate: List[Skill], jd: List[Skill], source_file: Optional[
                 cand = related[0]
                 return MatchedSkill(req_skill=req.skill_name, category=req.category_code, cand_skill=cand.skill_name,
                                     evidence=cand.evidence, confidence="low", match_type="category",
-                                    note=f"Related {req.category_code} skill, partial credit", credit=CREDIT["category"])
+                                    note=f"Related {req.category_code} skill, partial credit", credit=CREDIT["category"],
+                                    source=cand.source)
         return None
 
     results: List[Tuple[Skill, Optional[MatchedSkill]]] = [(req, satisfy(req)) for req in jd]
@@ -180,7 +193,8 @@ def match_skills(candidate: List[Skill], jd: List[Skill], source_file: Optional[
             if winner is not None and len(group) > 1:
                 matched.append(MatchedSkill(req_skill=req.skill_name, category=req.category_code, cand_skill=winner.cand_skill,
                                             evidence=req.evidence, confidence=winner.confidence, match_type="alternative",
-                                            note=f"JD accepts alternatives; you have {winner.req_skill}", credit=0.0))
+                                            note=f"JD accepts alternatives; you have {winner.req_skill}", credit=0.0,
+                                            source=winner.source))
                 continue
         weight = REQ_WEIGHT.get(req.confidence, 0.7)
         weight_total += weight

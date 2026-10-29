@@ -24,12 +24,14 @@ CategoryCode = Literal[
 ]
 
 Confidence = Literal["high", "medium", "low"]
+EvidenceSource = Literal["hackathon", "internship", "certification", "achievement"]
 
 class Skill(BaseModel):
     skill_name: str = Field(..., description="The skill or technology name")
     category_code: CategoryCode = Field(..., description="One of the 12 RADIX codes or OTHER")
     evidence: str = Field(..., description="A short quote, project mention or reason")
     confidence: Confidence = Field("high", description="High, medium or low")
+    source: Optional[EvidenceSource] = None
 
 class Hackathon(BaseModel):
     id: Optional[str] = None
@@ -55,6 +57,12 @@ class Certification(BaseModel):
     issue_date: str
     credential_id_or_url: Optional[str] = None
 
+class Achievement(BaseModel):
+    id: Optional[str] = None
+    title: str
+    description: str
+    date: str = ""
+
 class CandidateProfile(BaseModel):
     """Canonical Candidate Profile (Role 3 Output, handed off to Role 4 & Role 5)"""
     id: Optional[str] = None
@@ -73,6 +81,7 @@ class CandidateProfile(BaseModel):
     hackathons: List[Hackathon] = Field(default_factory=list)
     internships: List[Internship] = Field(default_factory=list)
     certifications: List[Certification] = Field(default_factory=list)
+    achievements: List[Achievement] = Field(default_factory=list)
     preferred_roles: List[str] = Field(default_factory=list)
     preferred_companies: Optional[List[str]] = Field(default_factory=list)
     preferred_mode: Optional[str] = "Hybrid"

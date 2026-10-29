@@ -123,7 +123,46 @@ export interface GroqExtractedSkill {
 export interface GroqExtractionResult {
   filename: string;
   skills_extracted: number;
+  profile: {
+    name: string | null;
+    email: string | null;
+    phone: string | null;
+    education: string | null;
+    institution: string | null;
+    cgpa: string | null;
+    graduation_year: string | null;
+    linkedin: string | null;
+    github: string | null;
+    portfolio: string | null;
+    summary: string | null;
+  };
   skills: GroqExtractedSkill[];
+  experience: Array<{
+    company: string;
+    role: string;
+    duration: string;
+    description: string;
+    skills_used: string[];
+  }>;
+  hackathons: Array<{
+    title: string;
+    role_or_project: string;
+    achievement: string;
+    skills_used: string[];
+    year: string;
+    link: string | null;
+  }>;
+  achievements: Array<{
+    title: string;
+    description: string;
+    date: string;
+  }>;
+  certifications: Array<{
+    name: string;
+    issuer: string;
+    issue_date: string;
+    credential_id_or_url: string | null;
+  }>;
 }
 
 /**
@@ -136,19 +175,31 @@ export async function extractSkillsFromResumeFile(
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch(`${API_BASE}/resume/extract-skills`, {
-    method: "POST",
-    body: formData,
-    signal: AbortSignal.timeout(90_000), // 90s — LLM calls can be slow
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}/resume/extract-skills`, {
+      method: "POST",
+      body: formData,
+      signal: AbortSignal.timeout(90_000), // 90s — LLM calls can be slow
+    });
+  } catch (error: unknown) {
+    if (error instanceof DOMException && error.name === "TimeoutError") {
+      throw new Error("Resume extraction timed out. Retry with a smaller or text-based resume.");
+    }
+    throw new Error("Cannot reach the resume extraction backend at 127.0.0.1:8000. Start the FastAPI server and retry.");
+  }
 
   if (!res.ok) {
     let detail = `HTTP ${res.status}`;
     try {
       const body = await res.json();
-      detail = body.detail || detail;
+      detail = typeof body.detail === "string"
+        ? body.detail
+        : body.detail
+          ? JSON.stringify(body.detail)
+          : detail;
     } catch {}
-    throw new Error(detail);
+    throw new Error(`Resume extraction failed (${res.status}): ${detail}`);
   }
 
   return res.json() as Promise<GroqExtractionResult>;

@@ -13,7 +13,12 @@ import {
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
-import { localMatch, matchSkillsRemote, MatchView } from "../lib/skillMatch";
+import {
+  buildCandidateMatchSkills,
+  localMatch,
+  matchSkillsRemote,
+  MatchView,
+} from "../lib/skillMatch";
 
 interface Page5SkillMatchingProps {
   onBack: () => void;
@@ -73,23 +78,28 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
     };
   }, [selectedJdSource, activeJdResult, selectedPresetKey]);
 
-  // Match on the shared taxonomy (backend); fall back to the offline matcher.
+  const candidateMatchSkills = useMemo(
+    () => buildCandidateMatchSkills(profile),
+    [profile],
+  );
+
+  // Match profile skills and documented experience evidence on the shared taxonomy.
   const localResult = useMemo(
-    () => localMatch(profile.skills, targetJob.skills_required),
-    [profile.skills, targetJob]
+    () => localMatch(candidateMatchSkills, targetJob.skills_required),
+    [candidateMatchSkills, targetJob]
   );
   const [remoteResult, setRemoteResult] = useState<MatchView | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setRemoteResult(null);
-    matchSkillsRemote(profile.skills, targetJob.skills_required)
+    matchSkillsRemote(candidateMatchSkills, targetJob.skills_required)
       .then((result) => !cancelled && setRemoteResult(result))
       .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, [profile.skills, targetJob]);
+  }, [candidateMatchSkills, targetJob]);
 
   const { matchScore, matchedSkills, missingSkills: rawMissing } = remoteResult ?? localResult;
   const missingSkills = rawMissing.map((gap) => ({
@@ -136,7 +146,7 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
             Target Job Match
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-2xl">
-            Detailed gap analysis comparing your competencies and inferred foundation against role requirements.
+            Matches your profile skills and relevant evidence from work experience, competitions, certifications, and achievements against this role.
           </p>
         </div>
 
@@ -304,6 +314,14 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
           </div>
         </div>
 
+        <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-[11px] leading-relaxed text-slate-600">
+          <strong className="text-slate-800">How this score works:</strong>{" "}
+          high-, medium-, and low-confidence JD requirements are weighted 1.0, 0.7, and 0.4.
+          Each is then credited by match quality: direct profile skill 100%, documented profile or experience evidence 90%,
+          inferred skill 75%, and related-category match 50%. Unmatched alternatives in an accepted JD alternative group
+          do not add extra weight. The “matched of total” count and weighted percentage are different measures.
+        </div>
+
         {/* Progress Bar */}
         <div className="mt-5">
           <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
@@ -363,6 +381,9 @@ export const Page5SkillMatching: React.FC<Page5SkillMatchingProps> = ({
                         {m.matchNote}
                       </span>
                     )}
+                    <span className="text-[10px] font-semibold text-slate-500">
+                      {Math.round(m.credit * 100)}% credit
+                    </span>
                     <span className="text-[10px] text-slate-500 capitalize">
                       {m.confidence} confidence
                     </span>

@@ -201,12 +201,12 @@ ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt"}
 @app.post("/api/resume/extract-skills")
 async def extract_resume_skills(file: UploadFile = File(...)):
     """
-    Upload a resume (PDF, DOCX, or TXT) and extract skills using Groq LLM.
+    Upload a resume (PDF, DOCX, or TXT) and extract profile data using Groq LLM.
 
     Returns structured skill data compatible with the Shared Data Contract.
     The GROQ_API_KEY environment variable must be set before calling this endpoint.
     """
-    from .groq_service import extract_skills_with_groq, extract_text_from_file
+    from .groq_service import extract_resume_with_groq, extract_text_from_file
 
     # --- Validate file type ---
     filename: str = file.filename or ""
@@ -236,7 +236,7 @@ async def extract_resume_skills(file: UploadFile = File(...)):
 
     # --- Call Groq ---
     try:
-        skills = extract_skills_with_groq(resume_text)
+        extracted = extract_resume_with_groq(resume_text)
     except RuntimeError as exc:
         # Missing API key — configuration error
         logger.error("Groq configuration error: %s", exc)
@@ -249,17 +249,46 @@ async def extract_resume_skills(file: UploadFile = File(...)):
             detail=f"Skill extraction failed: {exc}",
         ) from exc
     except Exception as exc:
-        # Provider errors, timeouts, etc.
-        logger.error("Groq API error: %s", exc)
+        # Translate common upstream failures into actionable API responses.
+        upstream_status = getattr(exc, "status_code", None)
+        if upstream_status in {401, 403}:
+            logger.error("Groq rejected the configured credentials (status=%s).", upstream_status)
+            raise HTTPException(
+                status_code=503,
+                detail="Groq rejected the configured API key. Verify GROQ_API_KEY and restart the backend.",
+            ) from exc
+        if upstream_status == 429:
+            logger.warning("Groq rate limit reached.")
+            raise HTTPException(
+                status_code=503,
+                detail="Groq rate limit reached. Wait briefly, then retry the resume upload.",
+                headers={"Retry-After": "30"},
+            ) from exc
+        if upstream_status in {400, 404}:
+            logger.exception("Groq rejected the extraction request (status=%s).", upstream_status)
+            raise HTTPException(
+                status_code=503,
+                detail="Groq rejected the model request. Check that GROQ_MODEL names an available model and restart the backend.",
+            ) from exc
+        if isinstance(exc, TimeoutError) or type(exc).__name__ in {"APITimeoutError", "ReadTimeout"}:
+            logger.error("Groq API request timed out.")
+            raise HTTPException(
+                status_code=504,
+                detail="Groq did not respond in time. Retry the resume upload.",
+            ) from exc
+
+        # Keep upstream response details in the local backend log, but do not
+        # return potentially sensitive provider data to the browser.
+        logger.exception("Groq API request failed (type=%s).", type(exc).__name__)
         raise HTTPException(
             status_code=502,
-            detail=f"Groq API error: {exc}",
+            detail="Groq could not complete resume extraction. Check the backend log for the upstream error and retry.",
         ) from exc
 
     return {
         "filename": filename,
-        "skills_extracted": len(skills),
-        "skills": skills,
+        "skills_extracted": len(extracted["skills"]),
+        **extracted,
     }
 
 if __name__ == "__main__":

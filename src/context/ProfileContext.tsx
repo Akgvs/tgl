@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import {
   CandidateProfile,
+  AchievementEntry,
   Skill,
   HackathonEntry,
   InternshipEntry,
@@ -35,6 +36,23 @@ interface ValidationState {
   coverage: Record<CategoryCode, number>;
 }
 
+function mergeExtractedEntries<T extends { id: string }>(
+  existing: T[],
+  extracted: T[],
+  identity: (item: T) => string,
+): T[] {
+  const merged = [...existing];
+  const seen = new Set(existing.map((item) => identity(item).toLowerCase().trim()));
+  for (const item of extracted) {
+    const key = identity(item).toLowerCase().trim();
+    if (key && !seen.has(key)) {
+      seen.add(key);
+      merged.push(item);
+    }
+  }
+  return merged;
+}
+
 interface ProfileContextType {
   user: AuthUser | null;
   setUser: (user: AuthUser | null) => void;
@@ -61,6 +79,8 @@ interface ProfileContextType {
   removeInternship: (id: string) => void;
   addCertification: (item: Omit<CertificationEntry, "id">) => void;
   removeCertification: (id: string) => void;
+  addAchievement: (item: Omit<AchievementEntry, "id">) => void;
+  removeAchievement: (id: string) => void;
   downloadProfileJSON: () => void;
   copyProfileJSON: () => Promise<boolean>;
   logout: () => void;
@@ -76,6 +96,7 @@ const DEFAULT_PROFILE: CandidateProfile = {
   hackathons: [],
   internships: [],
   certifications: [],
+  achievements: [],
   preferred_roles: ["Full Stack Developer", "Software Engineer"],
   preferred_mode: "Hybrid",
 };
@@ -108,7 +129,16 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const saved = localStorage.getItem("radix_user_profile");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_PROFILE,
+          ...parsed,
+          skills: parsed.skills || [],
+          hackathons: parsed.hackathons || [],
+          internships: parsed.internships || [],
+          certifications: parsed.certifications || [],
+          achievements: parsed.achievements || [],
+        };
       } catch {
         // fallback
       }
@@ -238,9 +268,46 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         email: extracted.email || prev.email || (user?.email ?? "candidate@example.com"),
         phone: extracted.phone || prev.phone,
         education: extracted.education || prev.education,
+        institution: extracted.institution || prev.institution,
         cgpa: extracted.cgpa || prev.cgpa,
         graduation_year: extracted.graduationYear || prev.graduation_year,
+        linkedin: extracted.linkedin || prev.linkedin,
+        github: extracted.github || prev.github,
+        portfolio: extracted.portfolio || prev.portfolio,
+        summary: extracted.summary || prev.summary,
         skills: mergedSkills,
+        internships: mergeExtractedEntries(
+          prev.internships || [],
+          (extracted.internships || []).map((item, index) => ({
+            ...item,
+            id: `resume_internship_${Date.now()}_${index}`,
+          })),
+          (item) => `${item.company}|${item.role}|${item.duration}`,
+        ),
+        hackathons: mergeExtractedEntries(
+          prev.hackathons || [],
+          (extracted.hackathons || []).map((item, index) => ({
+            ...item,
+            id: `resume_hackathon_${Date.now()}_${index}`,
+          })),
+          (item) => `${item.title}|${item.role_or_project}`,
+        ),
+        certifications: mergeExtractedEntries(
+          prev.certifications || [],
+          (extracted.certifications || []).map((item, index) => ({
+            ...item,
+            id: `resume_certification_${Date.now()}_${index}`,
+          })),
+          (item) => `${item.name}|${item.issuer}`,
+        ),
+        achievements: mergeExtractedEntries(
+          prev.achievements || [],
+          (extracted.achievements || []).map((item, index) => ({
+            ...item,
+            id: `resume_achievement_${Date.now()}_${index}`,
+          })),
+          (item) => `${item.title}|${item.date}`,
+        ),
         last_updated: new Date().toISOString(),
       };
 
@@ -348,6 +415,34 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
   }, []);
 
+  const addAchievement = useCallback((item: Omit<AchievementEntry, "id">) => {
+    const entry: AchievementEntry = { ...item, id: `a_${Date.now()}` };
+    setProfile((prev) => {
+      const next = {
+        ...prev,
+        achievements: [entry, ...(prev.achievements || [])],
+        last_updated: new Date().toISOString(),
+      };
+      localStorage.setItem("radix_user_profile", JSON.stringify(next));
+      saveProfileToBackend(next).catch(() => {});
+      return next;
+    });
+    toast.success(`Added achievement: ${entry.title}`);
+  }, []);
+
+  const removeAchievement = useCallback((id: string) => {
+    setProfile((prev) => {
+      const next = {
+        ...prev,
+        achievements: (prev.achievements || []).filter((item) => item.id !== id),
+        last_updated: new Date().toISOString(),
+      };
+      localStorage.setItem("radix_user_profile", JSON.stringify(next));
+      saveProfileToBackend(next).catch(() => {});
+      return next;
+    });
+  }, []);
+
   const downloadProfileJSON = useCallback(() => {
     const exportData = {
       name: profile.name,
@@ -357,6 +452,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       hackathons: profile.hackathons,
       internships: profile.internships,
       certifications: profile.certifications,
+      achievements: profile.achievements || [],
       preferred_roles: profile.preferred_roles,
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
@@ -379,6 +475,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         hackathons: profile.hackathons,
         internships: profile.internships,
         certifications: profile.certifications,
+        achievements: profile.achievements || [],
         preferred_roles: profile.preferred_roles,
       };
       await navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
@@ -441,6 +538,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         removeInternship,
         addCertification,
         removeCertification,
+        addAchievement,
+        removeAchievement,
         downloadProfileJSON,
         copyProfileJSON,
         logout,

@@ -116,12 +116,6 @@ export const Page2Extraction: React.FC<Page2ExtractionProps> = ({ onNext, onBack
     return annotatedSkills.filter((s) => s.isJdMatch).length;
   }, [annotatedSkills]);
 
-  const matchPercentage = useMemo(() => {
-    if (targetJdSkills.length === 0) return 0;
-    const ratio = matchingSkillsCount / targetJdSkills.length;
-    return Math.min(100, Math.round(ratio * 100));
-  }, [matchingSkillsCount, targetJdSkills]);
-
   // ── File upload handler ──────────────────────────────────────────────────
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -140,6 +134,7 @@ export const Page2Extraction: React.FC<Page2ExtractionProps> = ({ onNext, onBack
 
   const processResumeFile = async (file: File) => {
     setExtractionError(null);
+    setHasUploaded(false);
     setIsExtracting(true);
     setUploadedFileName(file.name);
 
@@ -149,19 +144,34 @@ export const Page2Extraction: React.FC<Page2ExtractionProps> = ({ onNext, onBack
       const inferred = groqSkillsToInferred(result.skills);
       const explicit = inferred.filter((s) => !s.isImplied);
       const implied = inferred.filter((s) => s.isImplied);
+      const { profile: extractedProfile } = result;
 
       setCurrentSkills(inferred);
       setSelectedImpliedSkills(new Set(implied.map((s) => s.skill_name)));
 
       // Save to profile context
       applyExtractedResumeToProfile({
-        name: profile.name || user?.name || "Candidate",
-        email: profile.email || user?.email || "candidate@example.com",
-        phone: profile.phone || "",
-        education: profile.education || "B.Tech in Computer Science",
-        cgpa: profile.cgpa || "",
-        graduationYear: profile.graduation_year || "2025",
-        summary: `Skills extracted via Groq LLM from ${file.name}`,
+        name: extractedProfile.name || profile.name || user?.name || "Candidate",
+        email: extractedProfile.email || profile.email || user?.email || "candidate@example.com",
+        phone: extractedProfile.phone || "",
+        education: extractedProfile.education || "",
+        institution: extractedProfile.institution || undefined,
+        cgpa: extractedProfile.cgpa || "",
+        graduationYear: extractedProfile.graduation_year || "",
+        linkedin: extractedProfile.linkedin || undefined,
+        github: extractedProfile.github || undefined,
+        portfolio: extractedProfile.portfolio || undefined,
+        summary: extractedProfile.summary || "",
+        internships: result.experience,
+        hackathons: result.hackathons.map(({ link, ...item }) => ({
+          ...item,
+          link: link || undefined,
+        })),
+        achievements: result.achievements,
+        certifications: result.certifications.map(({ credential_id_or_url, ...item }) => ({
+          ...item,
+          credential_id_or_url: credential_id_or_url || undefined,
+        })),
         explicitSkills: explicit,
         impliedSkills: implied,
         allSkills: inferred,
@@ -176,34 +186,38 @@ export const Page2Extraction: React.FC<Page2ExtractionProps> = ({ onNext, onBack
 
       setHasUploaded(true);
       toast.success(
-        `Extracted ${result.skills_extracted} skills from ${file.name} using Groq AI!`
+        `Extracted ${result.skills_extracted} skills, ${result.hackathons.length} competitions, ${result.achievements.length} achievements, ${result.experience.length} work records, and ${result.certifications.length} certifications.`
       );
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       setExtractionError(msg);
-      toast.warning("Groq extraction failed — falling back to local extraction engine.");
-
-      // Local fallback parser
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const text = (event.target?.result as string) || "";
-        const extracted = extractSkillsAndPrerequisitesFromResume(
-          text.length > 20
-            ? text
-            : `Candidate: ${user?.name || "Candidate"}\nSkills: React, TypeScript, Python, SQL, Docker`
-        );
-
-        setCurrentSkills(extracted.allSkills);
-        setSelectedImpliedSkills(new Set(extracted.impliedSkills.map((s) => s.skill_name)));
-        applyExtractedResumeToProfile(extracted);
-        updateProfile({
-          cv_file: file.name,
-          cv_uploaded_at: new Date().toISOString(),
-        });
-
-        setHasUploaded(true);
-      };
-      reader.readAsText(file);
+      if (file.name.toLowerCase().endsWith(".txt")) {
+        try {
+          const text = await file.text();
+          if (text.trim().length < 20) {
+            throw new Error("The text resume is empty or too short to extract.");
+          }
+          const extracted = extractSkillsAndPrerequisitesFromResume(text);
+          setCurrentSkills(extracted.allSkills);
+          setSelectedImpliedSkills(new Set(extracted.impliedSkills.map((s) => s.skill_name)));
+          applyExtractedResumeToProfile(extracted);
+          updateProfile({
+            cv_file: file.name,
+            cv_uploaded_at: new Date().toISOString(),
+          });
+          setHasUploaded(true);
+          setExtractionError(null);
+          toast.warning("Used local text extraction. Work history, competitions, achievements, and certifications require the Groq backend.");
+        } catch (fallbackError: unknown) {
+          const fallbackMessage = fallbackError instanceof Error
+            ? fallbackError.message
+            : "Local text extraction failed.";
+          setExtractionError(fallbackMessage);
+          toast.error(fallbackMessage);
+        }
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setIsExtracting(false);
     }
@@ -250,7 +264,7 @@ export const Page2Extraction: React.FC<Page2ExtractionProps> = ({ onNext, onBack
       education: profile.education || "",
       cgpa: profile.cgpa || "",
       graduationYear: profile.graduation_year || "",
-      summary: `Skills confirmed for ${uploadedFileName}`,
+      summary: profile.summary || `Skills extracted from ${uploadedFileName}`,
       explicitSkills: finalSkills.filter((s) => !s.isImplied),
       impliedSkills: finalSkills.filter((s) => s.isImplied),
       allSkills: finalSkills,
@@ -360,7 +374,7 @@ export const Page2Extraction: React.FC<Page2ExtractionProps> = ({ onNext, onBack
                     Drag and drop your file here, or click to browse
                   </p>
                   <p className="text-[11px] font-medium text-slate-400 mt-2">
-                    Accepts PDF, DOCX, or TXT · Max 10 MB · Powered by Groq Llama 3.3
+                    Accepts PDF, DOCX, or TXT · Max 10 MB · Powered by Groq AI
                   </p>
                 </div>
                 <div className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm group-hover:bg-blue-700 transition-all">
@@ -373,14 +387,14 @@ export const Page2Extraction: React.FC<Page2ExtractionProps> = ({ onNext, onBack
 
           {/* Extraction Error Notice */}
           {extractionError && (
-            <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+            <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
+              <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-semibold text-amber-800">
-                  Notice: Backend Groq service unavailable
+                <p className="text-xs font-semibold text-rose-800">
+                  Resume extraction failed
                 </p>
-                <p className="text-xs text-amber-700 mt-0.5">
-                  Extracted using client-side engine as fallback.
+                <p className="text-xs text-rose-700 mt-0.5">
+                  {extractionError}
                 </p>
               </div>
             </div>
@@ -445,40 +459,6 @@ export const Page2Extraction: React.FC<Page2ExtractionProps> = ({ onNext, onBack
           </button>
         </div>
       </div>
-
-      {/* Target Job Match Summary Banner (if active JD exists) */}
-      {activeJdResult && (
-        <div className="rounded-2xl border border-blue-200/80 bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-white p-5 mb-6 shadow-xs">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-blue-700 mb-1">
-                <Target className="h-4 w-4 text-blue-600" />
-                Target Job Match
-              </div>
-              <h2 className="text-base font-bold text-slate-900">
-                {activeJdResult.role} <span className="font-normal text-slate-500">at</span> {activeJdResult.company}
-              </h2>
-              <p className="text-xs text-slate-600 mt-0.5">
-                Your resume satisfies <strong className="font-bold text-slate-900">{matchingSkillsCount}</strong> of{" "}
-                <strong className="font-bold text-slate-900">{targetJdSkills.length}</strong> required competencies.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <span className="text-2xl font-black text-blue-700">{matchPercentage}%</span>
-                <span className="block text-[10px] font-semibold uppercase text-slate-400">Match Score</span>
-              </div>
-              <div className="w-28 bg-slate-200 h-2.5 rounded-full overflow-hidden">
-                <div
-                  className="bg-blue-600 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${matchPercentage}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-2 border-b border-slate-200">
